@@ -1,8 +1,17 @@
 <resources>
     <string name="app_name">Kioosk Sharj</string>
-
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <string name="action_settings">Settings</string>
+    <string name="phone_number">شماره موبایل</string>
+    <string name="charge_amount">مبلغ شارژ</string>
+    <string name="awesome_charge">شارژ شگفت انگیز</string>
+    <string name="payment_gateway">درگاه پرداخت</string>
+    <string name="saman_gateway">درگاه بانک سامان</string>
+    <string name="mellat_gateway">درگاه بانک ملت</string>
+    <string name="zarinpal_gateway">درگاه زرین پال</string>
+    <string name="buy">خرید</string>
+    <string name="navigation_drawer_open">بازکردن منو</string>
+    <string name="navigation_drawer_close">بستن منو</string>
+    <string name="operator">اپراتور</string>
+    <string name="irancel">ایرانسل</string>
+    <string name="hamrah_aval">همراه اول</string>
+    <string name="rightel">رایتل</string>
 </resources>
