@@ -10,4 +10,6 @@
     <color name="colorPrimaryText">#000</color>
     <color name="colorSecondaryText">#fff</color>
     <color name="colorBlueGrey">#607D8B</color>
+    <color name="colorWhite">#fff</color>
+    <color name="colorDanger">#FF5252</color>
 </resources>

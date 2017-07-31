@@ -1,13 +1,20 @@
 package com.ionicframework.KiooskSharj;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.AppCompatButton;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
@@ -23,6 +30,9 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     ImageView mtnLogo, mciLogo, rtlLogo;
     int selectedSize, normalSize, marginSize;
     TextView selectedOperator;
+    private AppCompatButton buyBtn;
+    private ImageView searchContact;
+    private EditText editTextPhone;
 
     public CardChargeFragment() {
         // Required empty public constructor
@@ -74,11 +84,11 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
         spinner.setOnItemSelectedListener(this);
 
         List<String> chargeAmounts = new ArrayList<>();
-        chargeAmounts.add("۱۰۰۰ تومان");
-        chargeAmounts.add("۲۰۰۰ تومان");
-        chargeAmounts.add("۵۰۰۰ تومان");
-        chargeAmounts.add("۱۰۰۰۰ تومان");
-        chargeAmounts.add("۲۰۰۰۰ تومان");
+        chargeAmounts.add("هزار تومان");
+        chargeAmounts.add("۲ هزار تومان");
+        chargeAmounts.add("۵ هزار تومان");
+        chargeAmounts.add("۱۰ هزار تومان");
+        chargeAmounts.add("۲۰ هزار تومان");
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this.getContext(), android.R.layout.simple_spinner_item, chargeAmounts);
 
@@ -102,6 +112,14 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
 
         selectedOperator = (TextView) view.findViewById(R.id.selectedOperator);
 
+        searchContact = (ImageView) view.findViewById(R.id.btn_search_cardcharge);
+        searchContact.setOnClickListener(this);
+
+        buyBtn = (AppCompatButton) view.findViewById(R.id.buy_cardcharge_btn);
+        buyBtn.setOnClickListener(this);
+
+        editTextPhone = (EditText) view.findViewById(R.id.phone_number_cardcharge);
+
         return view;
     }
 
@@ -117,79 +135,111 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
 
     @Override
     public void onClick(View v) {
-        int id = v.getId();
         ViewGroup.MarginLayoutParams params;
-        if (id == R.id.mtn_logo){
-            selectedOperator.setText(R.string.irancel);
+        switch (v.getId()) {
+            case (R.id.mtn_logo):
+                selectedOperator.setText(R.string.irancel);
 
-            params = (ViewGroup.MarginLayoutParams) (ViewGroup.MarginLayoutParams) mtnLogo.getLayoutParams();
-            params.width = selectedSize;
-            params.height = selectedSize;
-            params.topMargin = 0;
-            mtnLogo.setPadding(marginSize/2, marginSize/2, marginSize/2, marginSize/2);
-            mtnLogo.requestLayout();
+                params = (ViewGroup.MarginLayoutParams) (ViewGroup.MarginLayoutParams) mtnLogo.getLayoutParams();
+                params.width = selectedSize;
+                params.height = selectedSize;
+                params.topMargin = 0;
+                mtnLogo.setPadding(marginSize / 2, marginSize / 2, marginSize / 2, marginSize / 2);
+                mtnLogo.requestLayout();
 
-            params = (ViewGroup.MarginLayoutParams) mciLogo.getLayoutParams();
-            params.width = normalSize;
-            params.height = normalSize;
-            params.topMargin = marginSize;
-            mciLogo.setPadding(0, 0, 0, 0);
-            mciLogo.requestLayout();
+                params = (ViewGroup.MarginLayoutParams) mciLogo.getLayoutParams();
+                params.width = normalSize;
+                params.height = normalSize;
+                params.topMargin = marginSize;
+                mciLogo.setPadding(0, 0, 0, 0);
+                mciLogo.requestLayout();
 
-            params = (ViewGroup.MarginLayoutParams) rtlLogo.getLayoutParams();
-            params.width = normalSize;
-            params.height = normalSize;
-            params.topMargin = marginSize;
-            rtlLogo.setPadding(0, 0, 0, 0);
-            rtlLogo.requestLayout();
+                params = (ViewGroup.MarginLayoutParams) rtlLogo.getLayoutParams();
+                params.width = normalSize;
+                params.height = normalSize;
+                params.topMargin = marginSize;
+                rtlLogo.setPadding(0, 0, 0, 0);
+                rtlLogo.requestLayout();
+                break;
+            case (R.id.mci_logo):
+                selectedOperator.setText(R.string.hamrah_aval);
+
+                params = (ViewGroup.MarginLayoutParams) mtnLogo.getLayoutParams();
+                params.width = normalSize;
+                params.height = normalSize;
+                params.topMargin = marginSize;
+                mtnLogo.setPadding(0, 0, 0, 0);
+                mtnLogo.requestLayout();
+
+                params = (ViewGroup.MarginLayoutParams) mciLogo.getLayoutParams();
+                params.width = selectedSize;
+                params.height = selectedSize;
+                params.topMargin = 0;
+                mciLogo.setPadding(marginSize / 2, marginSize / 2, marginSize / 2, marginSize / 2);
+                mciLogo.requestLayout();
+
+                params = (ViewGroup.MarginLayoutParams) rtlLogo.getLayoutParams();
+                params.width = normalSize;
+                params.height = normalSize;
+                params.topMargin = marginSize;
+                rtlLogo.setPadding(0, 0, 0, 0);
+                rtlLogo.requestLayout();
+                break;
+            case (R.id.rtl_logo):
+                selectedOperator.setText(R.string.rightel);
+
+                params = (ViewGroup.MarginLayoutParams) mtnLogo.getLayoutParams();
+                params.width = normalSize;
+                params.height = normalSize;
+                params.topMargin = marginSize;
+                mtnLogo.setPadding(0, 0, 0, 0);
+                mtnLogo.requestLayout();
+
+                params = (ViewGroup.MarginLayoutParams) mciLogo.getLayoutParams();
+                params.width = normalSize;
+                params.height = normalSize;
+                params.topMargin = marginSize;
+                mciLogo.setPadding(0, 0, 0, 0);
+                mciLogo.requestLayout();
+
+                params = (ViewGroup.MarginLayoutParams) rtlLogo.getLayoutParams();
+                params.width = selectedSize;
+                params.height = selectedSize;
+                params.topMargin = 0;
+                rtlLogo.setPadding(marginSize / 2, marginSize / 2, marginSize / 2, marginSize / 2);
+                rtlLogo.requestLayout();
+                break;
+
+            case R.id.buy_topup_btn:
+                break;
+
+            case R.id.btn_search_cardcharge:
+                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+                intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
+                startActivityForResult(intent, 0);
+                break;
         }
-        else if (id == R.id.mci_logo){
-            selectedOperator.setText(R.string.hamrah_aval);
+    }
 
-            params = (ViewGroup.MarginLayoutParams) mtnLogo.getLayoutParams();
-            params.width = normalSize;
-            params.height = normalSize;
-            params.topMargin = marginSize;
-            mtnLogo.setPadding(0, 0, 0, 0);
-            mtnLogo.requestLayout();
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 0) {
 
-            params = (ViewGroup.MarginLayoutParams) mciLogo.getLayoutParams();
-            params.width = selectedSize;
-            params.height = selectedSize;
-            params.topMargin = 0;
-            mciLogo.setPadding(marginSize/2, marginSize/2, marginSize/2, marginSize/2);
-            mciLogo.requestLayout();
+            if (resultCode == Activity.RESULT_OK) {
 
-            params = (ViewGroup.MarginLayoutParams) rtlLogo.getLayoutParams();
-            params.width = normalSize;
-            params.height = normalSize;
-            params.topMargin = marginSize;
-            rtlLogo.setPadding(0, 0, 0, 0);
-            rtlLogo.requestLayout();
+                Uri contactUri = data.getData();
+
+                String[] projection = {ContactsContract.CommonDataKinds.Phone.NUMBER};
+
+                Cursor cursor = this.getActivity().getContentResolver()
+                        .query(contactUri, projection, null, null, null);
+                cursor.moveToFirst();
+
+                int column = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                String number = cursor.getString(column);
+                editTextPhone.setText(number.replace("+98", "0"));
+            }
         }
-        else if (id == R.id.rtl_logo){
-            selectedOperator.setText(R.string.rightel);
 
-            params = (ViewGroup.MarginLayoutParams) mtnLogo.getLayoutParams();
-            params.width = normalSize;
-            params.height = normalSize;
-            params.topMargin = marginSize;
-            mtnLogo.setPadding(0, 0, 0, 0);
-            mtnLogo.requestLayout();
-
-            params = (ViewGroup.MarginLayoutParams) mciLogo.getLayoutParams();
-            params.width = normalSize;
-            params.height = normalSize;
-            params.topMargin = marginSize;
-            mciLogo.setPadding(0, 0, 0, 0);
-            mciLogo.requestLayout();
-
-            params = (ViewGroup.MarginLayoutParams) rtlLogo.getLayoutParams();
-            params.width = selectedSize;
-            params.height = selectedSize;
-            params.topMargin = 0;
-            rtlLogo.setPadding(marginSize/2, marginSize/2, marginSize/2, marginSize/2);
-            rtlLogo.requestLayout();
-        }
     }
 }

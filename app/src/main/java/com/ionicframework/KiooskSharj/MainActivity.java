@@ -1,13 +1,14 @@
 package com.ionicframework.KiooskSharj;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,15 +19,32 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private Toolbar toolbar;
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
+    private NavigationView navigationView;
+    private DrawerLayout drawer;
+
+    private FragmentManager fragmentManager;
+    private Fragment fragment = null;
+
+    private SharedPreferences sharedpreferences;
+
+    private String TAG = MainActivity.class.getSimpleName();
+
+    private static String url = "http://chr724.ir/services/v3/EasyCharge/initializeData";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,56 +57,25 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("خرید شارژ");
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        fragmentManager = getSupportFragmentManager();
+
+        final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragment = new ChargeFragment();
+        fragmentTransaction.replace(R.id.main_container_wrapper, fragment);
+        fragmentTransaction.commit();
+
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
+        sharedpreferences = getSharedPreferences("InitilizeData", Context.MODE_PRIVATE);
 
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-    }
-
-    private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new TopupFragment(), "شارژ مستقیم");
-        adapter.addFragment(new CardChargeFragment(), "کارت شارژ");
-        viewPager.setAdapter(adapter);
-    }
-
-    class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
-
-        public ViewPagerAdapter(FragmentManager manager) {
-            super(manager);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            return mFragmentList.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return mFragmentList.size();
-        }
-
-        public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
-        }
+        new GetInitializeData().execute();
     }
 
     @Override
@@ -115,15 +102,106 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.charge) {
-
+            fragment = new ChargeFragment();
         } else if (id == R.id.packages) {
-
+            fragment = new PackageFragment();
         } else if (id == R.id.giftcard) {
-
+            fragment = new GiftcardFragment();
         }
+
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.main_container_wrapper, fragment);
+        transaction.commit();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
         return true;
+    }
+
+    private class GetInitializeData extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            HttpHandler sh = new HttpHandler();
+
+            // Making a request to url and getting response
+            String jsonStr = sh.makeServiceCall(url);
+
+            if (jsonStr != null) {
+                ArrayList<Package> packages = null;
+                ArrayList<Package> giftcards = null;
+                try {
+                    JSONObject jsonObj = new JSONObject(jsonStr);
+
+                    JSONObject packageObj = jsonObj.getJSONObject("products").getJSONObject("internetPackage").getJSONObject("mtn");
+                    packages = new ArrayList<Package>();
+
+                    for(Iterator<String> iter = packageObj.keys(); iter.hasNext();) {
+                        String key = iter.next();
+                        JSONArray tempArray = packageObj.getJSONArray(key);
+                        for (int i = 0; i < tempArray.length(); i++){
+                            JSONObject j = tempArray.getJSONObject(i);
+                            Package p = new Package(j.getString("id"), j.getString("name"), j.getString("price"));
+                            packages.add(p);
+                        }
+                    }
+
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+
+                    Type listOfPackages = new TypeToken<ArrayList<Package>>() {}.getType();
+                    String strPackages = new Gson().toJson(packages, listOfPackages);
+
+                    editor.putString("packages", strPackages);
+
+                    JSONObject giftcardObj = jsonObj.getJSONObject("products").getJSONObject("giftCard");
+                    giftcards = new ArrayList<Package>();
+
+                    for(Iterator<String> iter = giftcardObj.keys(); iter.hasNext();) {
+                        String key = iter.next();
+                        JSONArray tempArray = giftcardObj.getJSONArray(key);
+                        for (int i = 0; i < tempArray.length(); i++){
+                            JSONObject j = tempArray.getJSONObject(i);
+                            Package p = new Package(j.getString("id"), j.getString("name"), j.getString("price"));
+                            giftcards.add(p);
+                        }
+                    }
+
+                    Type listOfGiftcards = new TypeToken<ArrayList<Package>>() {}.getType();
+                    String strGiftcards = new Gson().toJson(giftcards, listOfGiftcards);
+
+                    editor.putString("giftcards", strGiftcards);
+
+                    editor.commit();
+
+                } catch (final JSONException e) {
+                    Log.e("", "Json parsing error: " + e.getMessage());
+                }
+
+
+            } else {
+                Log.e(TAG, "Couldn't get json from server.");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e(TAG, "Couldn't get json from server. Check LogCat for possible errors!");
+                    }
+                });
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+        }
+
     }
 }

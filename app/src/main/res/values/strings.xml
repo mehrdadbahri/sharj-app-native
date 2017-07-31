@@ -14,4 +14,7 @@
     <string name="irancel">ایرانسل</string>
     <string name="hamrah_aval">همراه اول</string>
     <string name="rightel">رایتل</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
