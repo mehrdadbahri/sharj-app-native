@@ -2,22 +2,22 @@ package com.ionicframework.KiooskSharj;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -73,9 +73,10 @@ public class MainActivity extends AppCompatActivity
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        sharedpreferences = getSharedPreferences("InitilizeData", Context.MODE_PRIVATE);
+        sharedpreferences = getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
 
-        new GetInitializeData().execute();
+        if (isNetworkConnected())
+            new GetInitializeData().execute();
     }
 
     @Override
@@ -177,7 +178,7 @@ public class MainActivity extends AppCompatActivity
 
                     editor.putString("giftcards", strGiftcards);
 
-                    editor.commit();
+                    editor.apply();
 
                 } catch (final JSONException e) {
                     Log.e("", "Json parsing error: " + e.getMessage());
@@ -203,5 +204,11 @@ public class MainActivity extends AppCompatActivity
             super.onPostExecute(result);
         }
 
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        return cm.getActiveNetworkInfo() != null;
     }
 }

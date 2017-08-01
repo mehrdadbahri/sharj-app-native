@@ -20,4 +20,8 @@
     <string name="online">آنلاین</string>
     <string name="offline">آفلاین (بدون نیاز به اینترنت)</string>
     <string name="payment_method">روش پرداخت</string>
+    <string name="stars">****</string>
+    <string name="credit_card_number">شماره کارت بانکی</string>
+    <string name="_09xxxxxxxxx">09xxxxxxxxx</string>
+    <string name="select_number_from_cantacts">انتخاب شماره از مخاطبین</string>
 </resources>

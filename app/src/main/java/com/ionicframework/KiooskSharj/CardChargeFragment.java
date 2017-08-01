@@ -1,7 +1,9 @@
 package com.ionicframework.KiooskSharj;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,7 +33,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     int selectedSize, normalSize, marginSize;
     TextView selectedOperator;
     private AppCompatButton buyBtn;
-    private ImageView searchContact;
+    SharedPreferences sharedpreferences;
     private EditText editTextPhone;
 
     public CardChargeFragment() {
@@ -48,6 +50,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_card_charge, container, false);
+
+        sharedpreferences = getContext().getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
 
         saman = (RadioButton) view.findViewById(R.id.saman_gateway);
         mellat = (RadioButton) view.findViewById(R.id.mellat_gateway);
@@ -112,25 +116,17 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
 
         selectedOperator = (TextView) view.findViewById(R.id.selectedOperator);
 
-        searchContact = (ImageView) view.findViewById(R.id.btn_search_cardcharge);
+        ImageView searchContact = (ImageView) view.findViewById(R.id.btn_search_cardcharge);
         searchContact.setOnClickListener(this);
 
         buyBtn = (AppCompatButton) view.findViewById(R.id.buy_cardcharge_btn);
         buyBtn.setOnClickListener(this);
 
         editTextPhone = (EditText) view.findViewById(R.id.phone_number_cardcharge);
+        if (sharedpreferences.contains("phoneNumber"))
+            editTextPhone.setText(sharedpreferences.getString("phoneNumber", ""));
 
         return view;
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        String item = parent.getItemAtPosition(position).toString();
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
     }
 
     @Override
@@ -210,7 +206,11 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 rtlLogo.requestLayout();
                 break;
 
-            case R.id.buy_topup_btn:
+            case R.id.buy_cardcharge_btn:
+                String phoneNumber = editTextPhone.getText().toString();
+                SharedPreferences.Editor editor = sharedpreferences.edit();
+                editor.putString("phoneNumber", phoneNumber);
+                editor.apply();
                 break;
 
             case R.id.btn_search_cardcharge:
@@ -240,6 +240,16 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 editTextPhone.setText(number.replace("+98", "0"));
             }
         }
+
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        String item = parent.getItemAtPosition(position).toString();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
 
     }
 }

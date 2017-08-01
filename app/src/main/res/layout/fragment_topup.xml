@@ -1,8 +1,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.ionicframework.KiooskSharj.TopupFragment">
 
     <LinearLayout
@@ -35,7 +35,7 @@
                 android:layout_marginTop="10sp"
                 android:layout_weight="1"
                 android:ems="10"
-                android:hint="09xxxxxxxxx"
+                android:hint="@string/_09xxxxxxxxx"
                 android:inputType="phone"
                 android:padding="10sp"
                 android:textDirection="ltr"
@@ -48,7 +48,8 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="-10sp"
                 android:layout_marginTop="5sp"
-                android:background="@drawable/search_btn" />
+                android:background="@drawable/search_btn"
+                android:contentDescription="@string/select_number_from_cantacts" />
 
         </LinearLayout>
 
@@ -89,12 +90,12 @@
                 android:textSize="16sp" />
 
             <Switch
+                android:id="@+id/awesome_charge_switch"
                 android:layout_width="0sp"
                 android:layout_height="wrap_content"
                 android:layout_margin="10sp"
                 android:layout_weight="1"
-                android:padding="10sp"
-                android:id="@+id/awesome_charge_switch"/>
+                android:padding="10sp" />
 
         </LinearLayout>
 
@@ -103,10 +104,10 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:textSize="16sp"
+            android:paddingTop="5sp"
             android:text="@string/payment_method"
-            android:paddingTop="5sp"/>
+            android:textAlignment="center"
+            android:textSize="16sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -129,9 +130,9 @@
                     android:id="@+id/rb_pay_offline"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="5sp"
                     android:layout_weight="0.95"
                     android:layoutDirection="ltr"
-                    android:layout_marginTop="5sp"
                     android:padding="10sp"
                     android:text="@string/offline"
                     android:textSize="16sp" />
@@ -153,10 +154,10 @@
                     android:id="@+id/rb_pay_online"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.95"
-                    android:layoutDirection="ltr"
-                    android:checked="true"
                     android:layout_marginTop="5sp"
+                    android:layout_weight="0.95"
+                    android:checked="true"
+                    android:layoutDirection="ltr"
                     android:padding="10sp"
                     android:text="@string/online"
                     android:textSize="16sp" />
@@ -166,17 +167,18 @@
         </LinearLayout>
 
         <View
+            android:id="@+id/topup_last_divider"
             android:layout_width="match_parent"
             android:layout_height="1sp"
-            android:layout_marginStart="20sp"
             android:layout_marginEnd="20sp"
+            android:layout_marginStart="20sp"
             android:background="@android:color/darker_gray"
-            android:id="@+id/topup_last_divider"/>
+            tools:ignore="SmallSp" />
 
         <net.cachapa.expandablelayout.ExpandableLayout
+            android:id="@+id/gateways_topup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/gateways_topup"
             android:orientation="vertical"
             app:el_duration="1000"
             app:el_expanded="true"
@@ -185,10 +187,10 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingTop="5sp"
                 android:text="@string/payment_gateway"
                 android:textAlignment="center"
-                android:textSize="16sp"
-                android:paddingTop="5sp"/>
+                android:textSize="16sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -269,6 +271,115 @@
 
         </net.cachapa.expandablelayout.ExpandableLayout>
 
+        <net.cachapa.expandablelayout.ExpandableLayout
+            android:id="@+id/creditcard_layout_topup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:el_duration="1000"
+            app:el_expanded="false"
+            app:el_parallax="0.5">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/credit_card_number"
+                    android:textAlignment="center"
+                    android:textSize="16sp"
+                    android:paddingTop="5sp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="4"
+                android:padding="10sp"
+                android:layout_marginTop="30sp"
+                android:layout_marginBottom="20sp"
+                android:layoutDirection="ltr">
+
+                <EditText
+                    android:id="@+id/et_credit1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="4"
+                    android:inputType="number"
+                    android:maxEms="4"
+                    android:shadowColor="@color/colorBlueGrey"
+                    android:shadowDx="2"
+                    android:shadowDy="2"
+                    android:shadowRadius="2"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:hint="@string/stars"
+                    android:textDirection="ltr"
+                    android:layout_marginStart="5sp"
+                    android:layout_marginEnd="5sp"
+                    android:theme="@style/CustomEditText"/>
+
+                <EditText
+                    android:id="@+id/et_credit2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="4"
+                    android:inputType="number"
+                    android:maxEms="4"
+                    android:shadowColor="@color/colorBlueGrey"
+                    android:shadowDx="2"
+                    android:shadowDy="2"
+                    android:shadowRadius="2"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:hint="@string/stars"
+                    android:textDirection="ltr"
+                    android:layout_marginStart="5sp"
+                    android:layout_marginEnd="5sp"
+                    android:theme="@style/CustomEditText"/>
+
+                <EditText
+                    android:id="@+id/et_credit3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="4"
+                    android:inputType="number"
+                    android:maxEms="4"
+                    android:shadowColor="@color/colorBlueGrey"
+                    android:shadowDx="2"
+                    android:shadowDy="2"
+                    android:shadowRadius="2"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:hint="@string/stars"
+                    android:textDirection="ltr"
+                    android:layout_marginStart="5sp"
+                    android:layout_marginEnd="5sp"
+                    android:theme="@style/CustomEditText"/>
+
+                <EditText
+                    android:id="@+id/et_credit4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="4"
+                    android:inputType="number"
+                    android:maxEms="4"
+                    android:shadowColor="@color/colorBlueGrey"
+                    android:shadowDx="2"
+                    android:shadowDy="2"
+                    android:shadowRadius="2"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:hint="@string/stars"
+                    android:textDirection="ltr"
+                    android:layout_marginStart="5sp"
+                    android:layout_marginEnd="5sp"
+                    android:theme="@style/CustomEditText"/>
+            </LinearLayout>
+
+        </net.cachapa.expandablelayout.ExpandableLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -281,7 +392,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="20sp"
                 android:background="@drawable/rounded_button"
-                android:drawableRight="@drawable/ic_shop"
+                android:drawableStart="@drawable/ic_shop"
                 android:padding="15sp"
                 android:text="@string/buy"
                 android:textColor="@color/colorSecondaryText"

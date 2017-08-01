@@ -65,7 +65,7 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
     }
 
     private ArrayList<Package> getPackagesList(){
-        SharedPreferences sharedpreferences = getActivity().getSharedPreferences("InitilizeData", Context.MODE_PRIVATE);
+        SharedPreferences sharedpreferences = getActivity().getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
         Type listOfPackages = new TypeToken<ArrayList<Package>>() {}.getType();
         String strPackages = sharedpreferences.getString("packages", "");
         ArrayList<Package> packages = new Gson().fromJson(strPackages, listOfPackages);
