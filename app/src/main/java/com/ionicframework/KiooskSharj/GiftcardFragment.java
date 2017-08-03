@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,7 @@ public class GiftcardFragment extends Fragment {
     }
 
     private ArrayList<Package> getGiftcardsList(){
-        SharedPreferences sharedpreferences = getActivity().getSharedPreferences("InitilizeData", Context.MODE_PRIVATE);
+        SharedPreferences sharedpreferences = getActivity().getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
         Type listOfGiftcards = new TypeToken<ArrayList<Package>>() {}.getType();
         String strGiftcards = sharedpreferences.getString("giftcards", "");
         ArrayList<Package> giftcards = new Gson().fromJson(strGiftcards, listOfGiftcards);

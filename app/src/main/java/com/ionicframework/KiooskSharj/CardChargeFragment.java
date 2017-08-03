@@ -2,6 +2,7 @@ package com.ionicframework.KiooskSharj;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -9,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -29,11 +31,12 @@ import java.util.List;
 public class CardChargeFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
 
     private RadioButton saman, mellat, zarinpal;
-    ImageView mtnLogo, mciLogo, rtlLogo;
-    int selectedSize, normalSize, marginSize;
-    TextView selectedOperator;
+    private ImageView mtnLogo, mciLogo, rtlLogo;
+    private int selectedSize, normalSize, marginSize;
+    private Spinner spinner;
+    private TextView selectedOperator;
     private AppCompatButton buyBtn;
-    SharedPreferences sharedpreferences;
+    private SharedPreferences sharedpreferences;
     private EditText editTextPhone;
 
     public CardChargeFragment() {
@@ -84,7 +87,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
             }
         });
 
-        Spinner spinner = (Spinner) view.findViewById(R.id.charge_amount);
+        spinner = (Spinner) view.findViewById(R.id.charge_amount);
         spinner.setOnItemSelectedListener(this);
 
         List<String> chargeAmounts = new ArrayList<>();
@@ -208,10 +211,42 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
 
             case R.id.buy_cardcharge_btn:
                 String phoneNumber = editTextPhone.getText().toString();
-                SharedPreferences.Editor editor = sharedpreferences.edit();
-                editor.putString("phoneNumber", phoneNumber);
-                editor.apply();
-                break;
+                if (isphoneNumber(phoneNumber)) {
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putString("phoneNumber", phoneNumber);
+                    editor.apply();
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setTitle("خطا");
+                    builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                    return;
+                }
+                String scriptVersion = "Android";
+
+                if (selectedOperator.getText().toString().equals(R.string.rightel)
+                        && spinner.getSelectedItem().toString().contains("هزار تومان")
+                        ) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setTitle("خطا");
+                    builder.setMessage("خرید کارت شارژ ۱۰۰۰ تومانی برای اپراتور رایتل امکان پذیر نمی باشد.");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                    return;
+                }
 
             case R.id.btn_search_cardcharge:
                 Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
@@ -241,6 +276,27 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
             }
         }
 
+    }
+
+    private boolean isphoneNumber(String phoneNumber) {
+        if (getOperator(phoneNumber) == null)
+            return false;
+        if (phoneNumber.length() != 11)
+            return false;
+        return true;
+    }
+
+    private String getOperator(String number) {
+        if (number.startsWith("093") || number.startsWith("090")) {
+            return "MTN";
+        } else if (number.startsWith("094")) {
+            return "WiMax";
+        } else if (number.startsWith("091") || number.startsWith("0990")) {
+            return "MCI";
+        } else if (number.startsWith("0921") || number.startsWith("0922")) {
+            return "RTL";
+        }
+        return null;
     }
 
     @Override
