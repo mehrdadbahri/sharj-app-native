@@ -1,6 +1,7 @@
 package com.ionicframework.KiooskSharj;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,13 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONObjectRequestListener;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +47,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     private AppCompatButton buyBtn;
     private SharedPreferences sharedpreferences;
     private EditText editTextPhone;
+    private String selectedGateway;
+    private String webserviceID = "587ceaef-4ee0-46dd-a64e-31585bef3768";
 
     public CardChargeFragment() {
         // Required empty public constructor
@@ -66,6 +77,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 saman.setChecked(true);
                 mellat.setChecked(false);
                 zarinpal.setChecked(false);
+                selectedGateway = "Saman";
             }
         });
 
@@ -75,6 +87,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 saman.setChecked(false);
                 mellat.setChecked(true);
                 zarinpal.setChecked(false);
+                selectedGateway = "Mellat";
             }
         });
 
@@ -84,10 +97,11 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 saman.setChecked(false);
                 mellat.setChecked(false);
                 zarinpal.setChecked(true);
+                selectedGateway = "ZarinPal";
             }
         });
 
-        spinner = (Spinner) view.findViewById(R.id.charge_amount);
+        spinner = (Spinner) view.findViewById(R.id.card_charge_amount);
         spinner.setOnItemSelectedListener(this);
 
         List<String> chargeAmounts = new ArrayList<>();
@@ -227,12 +241,11 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
-                    return;
+                    break;
                 }
                 String scriptVersion = "Android";
-
-                if (selectedOperator.getText().toString().equals(R.string.rightel)
-                        && spinner.getSelectedItem().toString().contains("هزار تومان")
+                if (selectedOperator.getText().toString().equals(getResources().getString(R.string.rightel))
+                        && spinner.getSelectedItem().toString().equals("هزار تومان")
                         ) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setTitle("خطا");
@@ -245,8 +258,14 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
-                    return;
+                    break;
                 }
+                String chargeCode = "CC-";
+                chargeCode = chargeCode.concat(getOperatorCode(selectedOperator.getText().toString()));
+                chargeCode = chargeCode.concat("-");
+                chargeCode = chargeCode.concat(getAmount(spinner));
+                buyCardCharge(chargeCode, phoneNumber, selectedGateway, scriptVersion);
+                break;
 
             case R.id.btn_search_cardcharge:
                 Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
@@ -254,6 +273,107 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 startActivityForResult(intent, 0);
                 break;
         }
+    }
+
+    private void buyCardCharge(
+            String chargeCode,
+            String phoneNumber,
+            String selectedGateway,
+            String scriptVersion
+    ) {
+        JSONObject jsonData = new JSONObject();
+        try {
+            jsonData.put("productId", chargeCode);
+            jsonData.put("cellphone", phoneNumber);
+            jsonData.put("issuer", selectedGateway);
+            jsonData.put("scriptVersion", scriptVersion);
+            jsonData.put("firstOutputType", "json");
+            jsonData.put("secondOutputType", "view");
+            jsonData.put("redirectToPage", "False");
+            jsonData.put("webserviceId", webserviceID);
+            String url = "https://chr724.ir/services/v3/EasyCharge/BuyProduct";
+            AndroidNetworking.post(url)
+                    .addJSONObjectBody(jsonData)
+                    .build()
+                    .getAsJSONObject(new JSONObjectRequestListener() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                if (response.getString("status").equals("Success")){
+                                    String paymentUrl = response.getJSONObject("paymentInfo").getString("url");
+                                    Intent i = new Intent(Intent.ACTION_VIEW);
+                                    i.setData(Uri.parse(paymentUrl));
+                                    startActivity(i);
+                                }
+                                else {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                    builder.setTitle("خطا");
+                                    builder.setMessage(response.getString("errorMessage"));
+                                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                        }
+                                    });
+                                    AlertDialog dialog = builder.create();
+                                    dialog.show();
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            catch (ActivityNotFoundException e){
+                                e.printStackTrace();
+                            }
+                        }
+                        @Override
+                        public void onError(ANError error) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            builder.setTitle("خطا");
+                            builder.setMessage("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
+                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
+                    });
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private String getOperatorCode(String name) {
+        switch (name){
+            case "رایتل":
+                return "RTL";
+            case "ایرانسل":
+                return "MTN";
+            case "همراه اول":
+                return "MCI";
+            default:
+                return "";
+        }
+    }
+
+    private String getAmount(Spinner spinner) {
+        switch (spinner.getSelectedItem().toString()) {
+            case "هزار تومان":
+                return "1000";
+            case "۲ هزار تومان":
+                return "2000";
+            case "۵ هزار تومان":
+                return "5000";
+            case "۱۰ هزار تومان":
+                return "10000";
+            case "۲۰ هزار تومان":
+                return "20000";
+        }
+        return null;
     }
 
     @Override
