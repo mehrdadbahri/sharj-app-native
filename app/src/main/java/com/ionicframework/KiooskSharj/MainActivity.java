@@ -54,8 +54,9 @@ public class MainActivity extends AppCompatActivity
         getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("خرید شارژ");
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("خرید شارژ");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -64,6 +65,15 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         fragmentManager = getSupportFragmentManager();
+
+        toolbar.setNavigationOnClickListener(v -> {
+            if (fragmentManager.getBackStackEntryCount() > 0)
+                fragmentManager.popBackStack("package_root", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            else if (drawer.isDrawerOpen(GravityCompat.START))
+                drawer.closeDrawer(GravityCompat.START);
+            else
+                drawer.openDrawer(GravityCompat.START);
+        });
 
         final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragment = new ChargeFragment();
@@ -83,9 +93,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+        } else super.onBackPressed();
     }
 
     @Override

@@ -45,8 +45,8 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     private RadioButton online_payment, offline_payment;
     private Switch awesomeSwitch;
     private ExpandableLayout gateways_layout, creditcard_layout;
-    SharedPreferences sharedpreferences;
-    AppCompatButton buyBtn;
+    private SharedPreferences sharedpreferences;
+    private AppCompatButton buyBtn;
     private View view;
     private EditText editTextPhone;
     private Spinner spinner;

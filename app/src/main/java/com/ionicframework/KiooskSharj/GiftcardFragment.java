@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,7 +34,9 @@ public class GiftcardFragment extends Fragment {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_giftcatd, container, false);
 
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("خرید گیفت کارت");
+        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        actionBar.setTitle("خرید گیفت کارت");
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         ArrayList<Package> giftcards = getGiftcardsList();
         ExpandableHeightGridView gridview = (ExpandableHeightGridView) view.findViewById(R.id.grid_view_giftcard);

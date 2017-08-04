@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,9 +39,12 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_mobile_package, container, false);
 
+        FragmentManager fm = getParentFragment().getFragmentManager();
+        fm.popBackStack("package_root", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
         ArrayList<Package> packages = getPackagesList();
         gridview = (ExpandableHeightGridView) view.findViewById(R.id.grid_view_packages);
-        gridview.setAdapter(new PackageCardAdapter(getContext(), packages));
+        gridview.setAdapter(new PackageCardAdapter(getContext(), fm, packages));
         gridview.setExpanded(true);
         gridview.setFocusable(false);
 

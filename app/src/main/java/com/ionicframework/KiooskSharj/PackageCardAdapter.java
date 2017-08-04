@@ -1,6 +1,9 @@
 package com.ionicframework.KiooskSharj;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +12,9 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,11 +27,13 @@ class PackageCardAdapter extends BaseAdapter implements Filterable {
     private Context mContext;
     private ArrayList<Package> packages;
     private ArrayList<Package> filteredPackages;
+    private FragmentManager fragmentManager;
 
     // Constructor
-    PackageCardAdapter(Context c, ArrayList<Package> packagesList) {
+    PackageCardAdapter(Context c, FragmentManager fm, ArrayList<Package> packagesList) {
         mContext = c;
         packages = packagesList;
+        fragmentManager = fm;
         filteredPackages = new ArrayList<>(packages);
     }
 
@@ -70,21 +78,26 @@ class PackageCardAdapter extends BaseAdapter implements Filterable {
 
         CardView cv = (CardView) view.findViewById(R.id.cv_package_card);
         cv.setOnClickListener(v -> {
-            // TODO
+            Bundle bundle = new Bundle();
+            String strPackage = new Gson().toJson(p, Package.class);
+            bundle.putString("selectedPackage", strPackage);
+            Fragment fragment = new PackagePurchaseFragment();
+            fragment.setArguments(bundle);
+            fragmentManager.beginTransaction().replace(R.id.main_container_wrapper, fragment).addToBackStack("package_root").commit();
         });
 
         return view;
     }
 
     private String getCustomerType(String name) {
-        if(name.contains("دائمی")) {
-            return "ویژه مشترکین دائمی";
-        }
-        if(name.contains("TDLTE")) {
-            return "ویژه مشترکین TDLTE";
-        }
         if (name.contains("شگفت انگیز")) {
             return "ویژه مشترکین اعتباری و دائمی";
+        }
+        if (name.contains("دائمی")) {
+            return "ویژه مشترکین دائمی";
+        }
+        if (name.contains("TDLTE")) {
+            return "ویژه مشترکین TDLTE";
         }
         return "ویژه مشترکین اعتباری";
     }
@@ -170,7 +183,7 @@ class PackageCardAdapter extends BaseAdapter implements Filterable {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                if (customerType == null || timeRange == null){
+                if (customerType == null || timeRange == null) {
 
                     return results;
                 }
@@ -192,8 +205,8 @@ class PackageCardAdapter extends BaseAdapter implements Filterable {
                             break;
                     }
                 }
-                for (Package p : tempArray){
-                    switch (timeRange){
+                for (Package p : tempArray) {
+                    switch (timeRange) {
                         case "hourly":
                             if (p.getName().contains("ساعت"))
                                 filteredPackages.add(p);

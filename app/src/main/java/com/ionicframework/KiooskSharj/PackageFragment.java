@@ -5,6 +5,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,7 +30,9 @@ public class PackageFragment extends Fragment {
         // Inflate the layout for this fragment
         View view =  inflater.inflate(R.layout.fragment_package, container, false);
 
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("بسته های اینترنتی ایرانسل");
+        ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
+        actionBar.setTitle("بسته های اینترنتی ایرانسل");
+        actionBar.setDisplayHomeAsUpEnabled(false);
 
         fragmentManager = getChildFragmentManager();
 
