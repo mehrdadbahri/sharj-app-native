@@ -14,21 +14,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PackageCardAdapter extends BaseAdapter implements Filterable {
+class PackageCardAdapter extends BaseAdapter implements Filterable {
     private Context mContext;
-    ArrayList<Package> packages;
-    ArrayList<Package> filteredPackages;
+    private ArrayList<Package> packages;
+    private ArrayList<Package> filteredPackages;
 
     // Constructor
-    public PackageCardAdapter(Context c, ArrayList<Package> packagesList) {
+    PackageCardAdapter(Context c, ArrayList<Package> packagesList) {
         mContext = c;
         packages = packagesList;
-        filteredPackages = new ArrayList<Package>(packages);
+        filteredPackages = new ArrayList<>(packages);
     }
 
     public int getCount() {
@@ -71,11 +69,8 @@ public class PackageCardAdapter extends BaseAdapter implements Filterable {
         ((TextView) view.findViewById(R.id.tv_pacakge_detail)).setText(detail);
 
         CardView cv = (CardView) view.findViewById(R.id.cv_package_card);
-        cv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO
-            }
+        cv.setOnClickListener(v -> {
+            // TODO
         });
 
         return view;
@@ -162,7 +157,7 @@ public class PackageCardAdapter extends BaseAdapter implements Filterable {
 
     @Override
     public Filter getFilter() {
-        Filter filter = new Filter() {
+        return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults results = new FilterResults();
@@ -180,7 +175,7 @@ public class PackageCardAdapter extends BaseAdapter implements Filterable {
                     return results;
                 }
                 filteredPackages.clear();
-                ArrayList<Package> tempArray = new ArrayList<Package>();
+                ArrayList<Package> tempArray = new ArrayList<>();
                 for (Package p : packages) {
                     switch (customerType) {
                         case "prepaid":
@@ -227,6 +222,5 @@ public class PackageCardAdapter extends BaseAdapter implements Filterable {
                 notifyDataSetChanged();
             }
         };
-        return filter;
     }
 }

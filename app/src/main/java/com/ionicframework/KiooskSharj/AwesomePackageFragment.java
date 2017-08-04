@@ -44,7 +44,7 @@ public class AwesomePackageFragment extends Fragment {
         Type listOfPackages = new TypeToken<ArrayList<Package>>() {}.getType();
         String strPackages = sharedpreferences.getString("packages", "");
         ArrayList<Package> tempArray = new Gson().fromJson(strPackages, listOfPackages);
-        ArrayList<Package> packages = new ArrayList<Package>();
+        ArrayList<Package> packages = new ArrayList<>();
         for (Package p : tempArray){
             if (p.getName().contains("شگفت انگیز")){
                 packages.add(p);

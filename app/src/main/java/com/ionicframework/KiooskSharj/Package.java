@@ -31,7 +31,4 @@ public class Package {
         return price;
     }
 
-    public void setPrice(String price) {
-        this.price = price;
-    }
 }

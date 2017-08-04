@@ -44,11 +44,9 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     private int selectedSize, normalSize, marginSize;
     private Spinner spinner;
     private TextView selectedOperator;
-    private AppCompatButton buyBtn;
     private SharedPreferences sharedpreferences;
     private EditText editTextPhone;
     private String selectedGateway;
-    private String webserviceID = "587ceaef-4ee0-46dd-a64e-31585bef3768";
 
     public CardChargeFragment() {
         // Required empty public constructor
@@ -71,34 +69,25 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
         mellat = (RadioButton) view.findViewById(R.id.mellat_gateway);
         zarinpal = (RadioButton) view.findViewById(R.id.zarrinpal_gateway);
 
-        saman.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saman.setChecked(true);
-                mellat.setChecked(false);
-                zarinpal.setChecked(false);
-                selectedGateway = "Saman";
-            }
+        saman.setOnClickListener(v -> {
+            saman.setChecked(true);
+            mellat.setChecked(false);
+            zarinpal.setChecked(false);
+            selectedGateway = "Saman";
         });
 
-        mellat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saman.setChecked(false);
-                mellat.setChecked(true);
-                zarinpal.setChecked(false);
-                selectedGateway = "Mellat";
-            }
+        mellat.setOnClickListener(v -> {
+            saman.setChecked(false);
+            mellat.setChecked(true);
+            zarinpal.setChecked(false);
+            selectedGateway = "Mellat";
         });
 
-        zarinpal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saman.setChecked(false);
-                mellat.setChecked(false);
-                zarinpal.setChecked(true);
-                selectedGateway = "ZarinPal";
-            }
+        zarinpal.setOnClickListener(v -> {
+            saman.setChecked(false);
+            mellat.setChecked(false);
+            zarinpal.setChecked(true);
+            selectedGateway = "ZarinPal";
         });
 
         spinner = (Spinner) view.findViewById(R.id.card_charge_amount);
@@ -136,7 +125,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
         ImageView searchContact = (ImageView) view.findViewById(R.id.btn_search_cardcharge);
         searchContact.setOnClickListener(this);
 
-        buyBtn = (AppCompatButton) view.findViewById(R.id.buy_cardcharge_btn);
+        AppCompatButton buyBtn = (AppCompatButton) view.findViewById(R.id.buy_cardcharge_btn);
         buyBtn.setOnClickListener(this);
 
         editTextPhone = (EditText) view.findViewById(R.id.phone_number_cardcharge);
@@ -153,7 +142,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
             case (R.id.mtn_logo):
                 selectedOperator.setText(R.string.irancel);
 
-                params = (ViewGroup.MarginLayoutParams) (ViewGroup.MarginLayoutParams) mtnLogo.getLayoutParams();
+                params = (ViewGroup.MarginLayoutParams) mtnLogo.getLayoutParams();
                 params.width = selectedSize;
                 params.height = selectedSize;
                 params.topMargin = 0;
@@ -233,11 +222,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setTitle("خطا");
                     builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
+                    builder.setPositiveButton("OK", (dialog, which) -> {
 
-                        }
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -250,11 +236,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setTitle("خطا");
                     builder.setMessage("خرید کارت شارژ ۱۰۰۰ تومانی برای اپراتور رایتل امکان پذیر نمی باشد.");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
+                    builder.setPositiveButton("OK", (dialog, which) -> {
 
-                        }
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -290,6 +273,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
             jsonData.put("firstOutputType", "json");
             jsonData.put("secondOutputType", "view");
             jsonData.put("redirectToPage", "False");
+            String webserviceID = "587ceaef-4ee0-46dd-a64e-31585bef3768";
             jsonData.put("webserviceId", webserviceID);
             String url = "https://chr724.ir/services/v3/EasyCharge/BuyProduct";
             AndroidNetworking.post(url)
@@ -299,42 +283,35 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                         @Override
                         public void onResponse(JSONObject response) {
                             try {
-                                if (response.getString("status").equals("Success")){
+                                if (response.getString("status").equals("Success")) {
                                     String paymentUrl = response.getJSONObject("paymentInfo").getString("url");
                                     Intent i = new Intent(Intent.ACTION_VIEW);
                                     i.setData(Uri.parse(paymentUrl));
                                     startActivity(i);
-                                }
-                                else {
+                                } else {
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                                     builder.setTitle("خطا");
                                     builder.setMessage(response.getString("errorMessage"));
-                                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
+                                    builder.setPositiveButton("OK", (dialog, which) -> {
 
-                                        }
                                     });
                                     AlertDialog dialog = builder.create();
                                     dialog.show();
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
-                            }
-                            catch (ActivityNotFoundException e){
+                            } catch (ActivityNotFoundException e) {
                                 e.printStackTrace();
                             }
                         }
+
                         @Override
                         public void onError(ANError error) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                             builder.setTitle("خطا");
                             builder.setMessage("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
-                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
+                            builder.setPositiveButton("OK", (dialog, which) -> {
 
-                                }
                             });
                             AlertDialog dialog = builder.create();
                             dialog.show();
@@ -348,7 +325,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     }
 
     private String getOperatorCode(String name) {
-        switch (name){
+        switch (name) {
             case "رایتل":
                 return "RTL";
             case "ایرانسل":

@@ -1,7 +1,5 @@
 package com.ionicframework.KiooskSharj;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -13,9 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class PackageFragment extends Fragment {
-
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
 
     private FragmentManager fragmentManager;
 
@@ -38,10 +33,10 @@ public class PackageFragment extends Fragment {
 
         fragmentManager = getChildFragmentManager();
 
-        viewPager = (ViewPager) view.findViewById(R.id.viewpager_package);
+        ViewPager viewPager = (ViewPager) view.findViewById(R.id.viewpager_package);
         setupViewPager(viewPager);
 
-        tabLayout = (TabLayout) view.findViewById(R.id.tabs_package);
+        TabLayout tabLayout = (TabLayout) view.findViewById(R.id.tabs_package);
         tabLayout.setupWithViewPager(viewPager);
 
         return view;

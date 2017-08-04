@@ -30,17 +30,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
-    private Toolbar toolbar;
-    private NavigationView navigationView;
-    private DrawerLayout drawer;
 
     private FragmentManager fragmentManager;
     private Fragment fragment = null;
@@ -58,11 +53,11 @@ public class MainActivity extends AppCompatActivity
 
         getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("خرید شارژ");
 
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -75,7 +70,7 @@ public class MainActivity extends AppCompatActivity
         fragmentTransaction.replace(R.id.main_container_wrapper, fragment);
         fragmentTransaction.commit();
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         sharedpreferences = getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
@@ -140,8 +135,8 @@ public class MainActivity extends AppCompatActivity
                 String jsonStr = sh.makeServiceCall(url);
 
                 if (jsonStr != null) {
-                    ArrayList<Package> packages = null;
-                    ArrayList<Package> giftcards = null;
+                    ArrayList<Package> packages;
+                    ArrayList<Package> giftcards;
                     try {
                         JSONObject jsonObj = new JSONObject(jsonStr);
 
@@ -167,7 +162,7 @@ public class MainActivity extends AppCompatActivity
                         editor.putString("packages", strPackages);
 
                         JSONObject giftcardObj = jsonObj.getJSONObject("products").getJSONObject("giftCard");
-                        giftcards = new ArrayList<Package>();
+                        giftcards = new ArrayList<>();
 
                         for (Iterator<String> iter = giftcardObj.keys(); iter.hasNext(); ) {
                             String key = iter.next();
@@ -194,12 +189,7 @@ public class MainActivity extends AppCompatActivity
 
                 } else {
                     Log.e(TAG, "Couldn't get json from server.");
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.e(TAG, "Couldn't get json from server. Check LogCat for possible errors!");
-                        }
-                    });
+                    runOnUiThread(() -> Log.e(TAG, "Couldn't get json from server. Check LogCat for possible errors!"));
 
                 }
             }
@@ -224,11 +214,7 @@ public class MainActivity extends AppCompatActivity
                 urlc.setRequestProperty("Connection", "close");
                 urlc.setConnectTimeout(1000); // mTimeout is in seconds
                 urlc.connect();
-                if (urlc.getResponseCode() == 200) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return urlc.getResponseCode() == 200;
             } catch (IOException e) {
                 Log.i("warning", "Error checking internet connection", e);
                 return false;

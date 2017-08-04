@@ -3,7 +3,6 @@ package com.ionicframework.KiooskSharj;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -52,7 +51,6 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     private EditText editTextPhone;
     private Spinner spinner;
     private EditText credit1, credit2, credit3, credit4;
-    private String webserviceID = "587ceaef-4ee0-46dd-a64e-31585bef3768";
 
     public TopupFragment() {
         // Required empty public constructor
@@ -75,34 +73,25 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
         mellat = (RadioButton) view.findViewById(R.id.mellat_gateway);
         zarinpal = (RadioButton) view.findViewById(R.id.zarrinpal_gateway);
 
-        saman.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saman.setChecked(true);
-                mellat.setChecked(false);
-                zarinpal.setChecked(false);
-                selectedGateway = "Saman";
-            }
+        saman.setOnClickListener(v -> {
+            saman.setChecked(true);
+            mellat.setChecked(false);
+            zarinpal.setChecked(false);
+            selectedGateway = "Saman";
         });
 
-        mellat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saman.setChecked(false);
-                mellat.setChecked(true);
-                zarinpal.setChecked(false);
-                selectedGateway = "Mellat";
-            }
+        mellat.setOnClickListener(v -> {
+            saman.setChecked(false);
+            mellat.setChecked(true);
+            zarinpal.setChecked(false);
+            selectedGateway = "Mellat";
         });
 
-        zarinpal.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saman.setChecked(false);
-                mellat.setChecked(false);
-                zarinpal.setChecked(true);
-                selectedGateway = "ZarinPal";
-            }
+        zarinpal.setOnClickListener(v -> {
+            saman.setChecked(false);
+            mellat.setChecked(false);
+            zarinpal.setChecked(true);
+            selectedGateway = "ZarinPal";
         });
 
         online_payment = (RadioButton) view.findViewById(R.id.rb_pay_online);
@@ -111,26 +100,18 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
         gateways_layout = (ExpandableLayout) view.findViewById(R.id.gateways_topup);
         creditcard_layout = (ExpandableLayout) view.findViewById(R.id.creditcard_layout_topup);
 
-        online_payment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                online_payment.setChecked(true);
-                offline_payment.setChecked(false);
-                gateways_layout.expand();
-                creditcard_layout.collapse();
-//                view.findViewById(R.id.topup_last_divider).setVisibility(View.VISIBLE);
-            }
+        online_payment.setOnClickListener(v -> {
+            online_payment.setChecked(true);
+            offline_payment.setChecked(false);
+            gateways_layout.expand();
+            creditcard_layout.collapse();
         });
 
-        offline_payment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                online_payment.setChecked(false);
-                offline_payment.setChecked(true);
-                gateways_layout.collapse();
-                creditcard_layout.expand();
-//                view.findViewById(R.id.topup_last_divider).setVisibility(View.GONE);
-            }
+        offline_payment.setOnClickListener(v -> {
+            online_payment.setChecked(false);
+            offline_payment.setChecked(true);
+            gateways_layout.collapse();
+            creditcard_layout.expand();
         });
 
         spinner = (Spinner) view.findViewById(R.id.charge_amount);
@@ -182,11 +163,8 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setTitle("خطا");
                     builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
+                    builder.setPositiveButton("OK", (dialog, which) -> {
 
-                        }
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -231,6 +209,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
             jsonData.put("firstOutputType", "json");
             jsonData.put("secondOutputType", "view");
             jsonData.put("redirectToPage", "False");
+            String webserviceID = "587ceaef-4ee0-46dd-a64e-31585bef3768";
             jsonData.put("webserviceId", webserviceID);
             String url = "https://chr724.ir/services/v3/EasyCharge/topup";
             AndroidNetworking.post(url)
@@ -250,19 +229,13 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                                     builder.setTitle("خطا");
                                     builder.setMessage(response.getString("errorMessage"));
-                                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
+                                    builder.setPositiveButton("OK", (dialog, which) -> {
 
-                                        }
                                     });
                                     AlertDialog dialog = builder.create();
                                     dialog.show();
                                 }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            catch (ActivityNotFoundException e){
+                            } catch (JSONException | ActivityNotFoundException e) {
                                 e.printStackTrace();
                             }
                         }
@@ -271,11 +244,8 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                             builder.setTitle("خطا");
                             builder.setMessage("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
-                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
+                            builder.setPositiveButton("OK", (dialog, which) -> {
 
-                                }
                             });
                             AlertDialog dialog = builder.create();
                             dialog.show();
@@ -320,11 +290,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private boolean isphoneNumber(String phoneNumber) {
-        if (getOperator(phoneNumber) == null)
-            return false;
-        if (phoneNumber.length() != 11)
-            return false;
-        return true;
+        return getOperator(phoneNumber) != null && phoneNumber.length() == 11;
     }
 
     @Override

@@ -57,11 +57,8 @@ public class GiftcardCardAdapter extends BaseAdapter {
         ((ImageView) view.findViewById(R.id.iv_giftcard_logo)).setImageResource(getImageId(p.getId()));
 
         CardView cv = (CardView) view.findViewById(R.id.cv_giftcards);
-        cv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO
-            }
+        cv.setOnClickListener(v -> {
+            // TODO
         });
 
         return view;
