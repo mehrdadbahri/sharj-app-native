@@ -1,15 +1,20 @@
 package com.ionicframework.KiooskSharj;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.text.Editable;
@@ -51,6 +56,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     private EditText editTextPhone;
     private Spinner spinner;
     private EditText credit1, credit2, credit3, credit4;
+    private String USSD;
 
     public TopupFragment() {
         // Required empty public constructor
@@ -180,7 +186,39 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                     onlineTopup(chargeCode, phoneNumber, chargeAmount, selectedGateway, scriptVersion);
                 }
                 else {
-                    //TODO
+                    String creditNumber = getCreditCard();
+                    if (isCreditNumber(creditNumber)){
+                        SharedPreferences.Editor editor = sharedpreferences.edit();
+                        editor.putString("creditCard", creditNumber);
+                        editor.apply();
+                        USSD = generateUSSD(
+                                phoneNumber,
+                                getAmount(spinner),
+                                awesomeSwitch.isChecked(),
+                                creditNumber);
+                        if (Build.VERSION.SDK_INT < 23) {
+                            startActivity(new Intent("android.intent.action.CALL", Uri.parse(USSD)));
+                            return;
+                        }
+                        String callPermission = Manifest.permission.CALL_PHONE;
+                        if (ContextCompat.checkSelfPermission(getContext(), callPermission) == PackageManager.PERMISSION_GRANTED){
+                            startActivity(new Intent("android.intent.action.CALL", Uri.parse(USSD)));
+                            return;
+                        }
+                        requestPermissions(new String[]{callPermission}, 1);
+
+                    }
+                    else {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                        builder.setTitle("خطا");
+                        builder.setMessage("شماره کارت بانکی صحیح نمی باشد.");
+                        builder.setPositiveButton("OK", (dialog, which) -> {
+
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                        return;
+                    }
                 }
                 break;
 
@@ -293,6 +331,19 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
         return getOperator(phoneNumber) != null && phoneNumber.length() == 11;
     }
 
+    private boolean isCreditNumber(String creditNumber) {
+        if (creditNumber.length() == 16 && creditNumber.matches("[0-9]+"))
+            return true;
+        return false;
+    }
+
+    private String getCreditCard() {
+        return credit1.getText().toString()+
+                credit2.getText().toString()+
+                credit3.getText().toString()+
+                credit4.getText().toString();
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 0) {
@@ -322,6 +373,14 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
         credit2 = (EditText) view.findViewById(R.id.et_credit2);
         credit3 = (EditText) view.findViewById(R.id.et_credit3);
         credit4 = (EditText) view.findViewById(R.id.et_credit4);
+
+        if (sharedpreferences.contains("creditCard")) {
+            String creditCard = sharedpreferences.getString("creditCard", "");
+            credit1.setText(creditCard.substring(0, 4));
+            credit2.setText(creditCard.substring(4, 8));
+            credit3.setText(creditCard.substring(8, 12));
+            credit4.setText(creditCard.substring(12, 16));
+        }
 
         credit1.addTextChangedListener(new TextWatcher() {
 
@@ -435,5 +494,35 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
 
+    }
+
+    private String generateUSSD(String phone, String amount, Boolean isAwesome, String creditNumber) {
+        String USSD = "tel:*789*1415*1*";
+        USSD += phone + "*";
+        USSD += isAwesome ? "2*" : "1*";
+        USSD += amount + "*";
+        USSD += creditNumber;
+        return USSD + Uri.encode("#");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String permissions[],
+            int[] grantResults
+    ) {
+        switch (requestCode) {
+
+            case 1: {
+
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startActivity(new Intent("android.intent.action.CALL", Uri.parse(USSD)));
+                } else {
+
+                }
+                return;
+            }
+        }
     }
 }
