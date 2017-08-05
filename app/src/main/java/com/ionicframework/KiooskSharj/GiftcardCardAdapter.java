@@ -1,6 +1,9 @@
 package com.ionicframework.KiooskSharj;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 
@@ -18,11 +23,13 @@ import java.util.ArrayList;
 public class GiftcardCardAdapter extends BaseAdapter {
     private Context mContext;
     private ArrayList<Package> giftcards;
+    private FragmentManager fragmentManager;
 
     // Constructor
-    public GiftcardCardAdapter(Context c, ArrayList<Package> giftcardsList){
+    public GiftcardCardAdapter(Context c, FragmentManager fm, ArrayList<Package> giftcardsList){
         mContext = c;
         giftcards = giftcardsList;
+        fragmentManager = fm;
     }
 
     public int getCount() {
@@ -58,7 +65,12 @@ public class GiftcardCardAdapter extends BaseAdapter {
 
         CardView cv = (CardView) view.findViewById(R.id.cv_giftcards);
         cv.setOnClickListener(v -> {
-            // TODO
+            Bundle bundle = new Bundle();
+            String strPackage = new Gson().toJson(p, Package.class);
+            bundle.putString("selectedGiftcard", strPackage);
+            Fragment fragment = new GiftcardPurchaseFragment();
+            fragment.setArguments(bundle);
+            fragmentManager.beginTransaction().replace(R.id.main_container_wrapper, fragment).addToBackStack("giftcard_root").commit();
         });
 
         return view;

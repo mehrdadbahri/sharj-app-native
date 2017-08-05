@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity
 
         toolbar.setNavigationOnClickListener(v -> {
             if (fragmentManager.getBackStackEntryCount() > 0)
-                fragmentManager.popBackStack("package_root", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                fragmentManager.popBackStack();
             else if (drawer.isDrawerOpen(GravityCompat.START))
                 drawer.closeDrawer(GravityCompat.START);
             else
@@ -93,7 +94,19 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else super.onBackPressed();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("خروج");
+            builder.setMessage("آیا می خواهید از برنامه خارج شوید؟");
+            builder.setPositiveButton("بلی", (dialog, which) -> {
+                finish();
+            });
+            builder.setNegativeButton("خیر", (dialog, which) -> {
+
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
     }
 
     @Override
