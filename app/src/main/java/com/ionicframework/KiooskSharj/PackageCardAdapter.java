@@ -5,6 +5,11 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.CardView;
+import android.transition.ChangeBounds;
+import android.transition.Slide;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,13 +82,36 @@ class PackageCardAdapter extends BaseAdapter implements Filterable {
         ((TextView) view.findViewById(R.id.tv_pacakge_detail)).setText(detail);
 
         CardView cv = (CardView) view.findViewById(R.id.cv_package_card);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            String transitionName = "card" + p.getId();
+            cv.setTransitionName(transitionName);
+        }
         cv.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             String strPackage = new Gson().toJson(p, Package.class);
             bundle.putString("selectedPackage", strPackage);
             Fragment fragment = new PackagePurchaseFragment();
-            fragment.setArguments(bundle);
-            fragmentManager.beginTransaction().replace(R.id.main_container_wrapper, fragment).addToBackStack("package_root").commit();
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                // Defines enter transition only for shared element
+                Transition changeBoundsTransition = TransitionInflater.from(mContext).inflateTransition(android.R.transition.move);
+//                changeBoundsTransition.setDuration(1000);
+                fragment.setSharedElementEnterTransition(changeBoundsTransition);
+                bundle.putString("transitionName", "card" + p.getId());
+                fragment.setArguments(bundle);
+                fragmentManager.beginTransaction()
+                        .replace(R.id.main_container_wrapper, fragment)
+                        .addToBackStack("package_root")
+                        .addSharedElement(cv, "card" + p.getId())
+                        .commit();
+
+            } else {
+                fragment.setArguments(bundle);
+                fragmentManager.beginTransaction()
+                        .replace(R.id.main_container_wrapper, fragment)
+                        .addToBackStack("package_root")
+                        .commit();
+            }
         });
 
         return view;

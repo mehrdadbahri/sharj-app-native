@@ -16,7 +16,9 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Slide;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -95,17 +97,20 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("خروج");
-            builder.setMessage("آیا می خواهید از برنامه خارج شوید؟");
-            builder.setPositiveButton("بلی", (dialog, which) -> {
-                finish();
-            });
-            builder.setNegativeButton("خیر", (dialog, which) -> {
+            if (fragmentManager.getBackStackEntryCount() == 0) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("خروج");
+                builder.setMessage("آیا می خواهید از برنامه خارج شوید؟");
+                builder.setPositiveButton("بلی", (dialog, which) -> {
+                    finish();
+                });
+                builder.setNegativeButton("خیر", (dialog, which) -> {
 
-            });
-            AlertDialog dialog = builder.create();
-            dialog.show();
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+            else super.onBackPressed();
         }
     }
 

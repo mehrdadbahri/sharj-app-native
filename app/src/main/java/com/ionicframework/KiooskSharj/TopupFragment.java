@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -332,9 +331,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private boolean isCreditNumber(String creditNumber) {
-        if (creditNumber.length() == 16 && creditNumber.matches("[0-9]+"))
-            return true;
-        return false;
+        return creditNumber.length() == 16 && creditNumber.matches("[0-9]+");
     }
 
     private String getCreditCard() {
@@ -497,12 +494,32 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private String generateUSSD(String phone, String amount, Boolean isAwesome, String creditNumber) {
-        String USSD = "tel:*789*1415*1*";
-        USSD += phone + "*";
-        USSD += isAwesome ? "2*" : "1*";
-        USSD += amount + "*";
-        USSD += creditNumber;
-        return USSD + Uri.encode("#");
+        String ussd = "tel:*789*1415*1*";
+        ussd += phone + "*";
+        ussd += isAwesome ? "2*" : "1*";
+        if (isAwesome){
+            switch (amount){
+                case "1000":
+                    amount = "1";
+                    break;
+                case "2000":
+                    amount = "2";
+                    break;
+                case "5000":
+                    amount = "5";
+                    break;
+                case "10000":
+                    amount = "10";
+                    break;
+                case "20000":
+                    amount = "20";
+                    break;
+            }
+        }
+        ussd += amount + "*";
+        ussd += creditNumber;
+        ussd += "*1";
+        return ussd + Uri.encode("#");
     }
 
     @Override
@@ -518,10 +535,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startActivity(new Intent("android.intent.action.CALL", Uri.parse(USSD)));
-                } else {
-
                 }
-                return;
             }
         }
     }
