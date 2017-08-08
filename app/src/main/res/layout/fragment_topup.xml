@@ -1,9 +1,9 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sv_topup"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/sv_topup"
     tools:context="com.ionicframework.KiooskSharj.TopupFragment">
 
     <LinearLayout
@@ -102,13 +102,34 @@
 
         <include layout="@layout/horizontal_divider" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="5sp"
-            android:text="@string/payment_method"
-            android:textAlignment="center"
-            android:textSize="16sp" />
+            android:gravity="center">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="5sp"
+                android:text="@string/payment_method"
+                android:textAlignment="center"
+                android:textColor="@color/colorPrimaryText"
+                android:textStyle="bold"
+                android:textSize="16sp" />
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab_payment_method_hint"
+                app:fabSize="mini"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="center"
+                android:layout_margin="5sp"
+                app:backgroundTint="@color/colorButtonPrimary"
+                app:borderWidth="0dp"
+                android:src="@drawable/ic_priority_high_black_24dp"/>
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -191,6 +212,8 @@
                 android:paddingTop="5sp"
                 android:text="@string/payment_gateway"
                 android:textAlignment="center"
+                android:textColor="@color/colorPrimaryText"
+                android:textStyle="bold"
                 android:textSize="16sp" />
 
             <LinearLayout
@@ -281,102 +304,102 @@
             app:el_expanded="false"
             app:el_parallax="0.5">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/credit_card_number"
-                    android:textAlignment="center"
-                    android:textSize="16sp"
-                    android:paddingTop="5sp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="5sp"
+                android:text="@string/credit_card_number"
+                android:textAlignment="center"
+                android:textSize="16sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:weightSum="4"
-                android:padding="10sp"
-                android:layout_marginTop="30sp"
                 android:layout_marginBottom="20sp"
-                android:layoutDirection="ltr">
+                android:layout_marginTop="30sp"
+                android:layoutDirection="ltr"
+                android:padding="10sp"
+                android:weightSum="4">
 
                 <EditText
                     android:id="@+id/et_credit1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="5sp"
+                    android:layout_marginStart="5sp"
                     android:layout_weight="1"
                     android:ems="4"
+                    android:hint="@string/stars"
                     android:inputType="number"
                     android:maxEms="4"
                     android:shadowColor="@color/colorBlueGrey"
                     android:shadowDx="2"
                     android:shadowDy="2"
                     android:shadowRadius="2"
-                    android:textStyle="bold"
                     android:textAlignment="center"
-                    android:hint="@string/stars"
                     android:textDirection="ltr"
-                    android:layout_marginStart="5sp"
-                    android:layout_marginEnd="5sp"
-                    android:theme="@style/CustomEditText"/>
+                    android:textStyle="bold"
+                    android:theme="@style/CustomEditText" />
 
                 <EditText
                     android:id="@+id/et_credit2"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="5sp"
+                    android:layout_marginStart="5sp"
                     android:layout_weight="1"
                     android:ems="4"
+                    android:hint="@string/stars"
                     android:inputType="number"
                     android:maxEms="4"
                     android:shadowColor="@color/colorBlueGrey"
                     android:shadowDx="2"
                     android:shadowDy="2"
                     android:shadowRadius="2"
-                    android:textStyle="bold"
                     android:textAlignment="center"
-                    android:hint="@string/stars"
                     android:textDirection="ltr"
-                    android:layout_marginStart="5sp"
-                    android:layout_marginEnd="5sp"
-                    android:theme="@style/CustomEditText"/>
+                    android:textStyle="bold"
+                    android:theme="@style/CustomEditText" />
 
                 <EditText
                     android:id="@+id/et_credit3"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="5sp"
+                    android:layout_marginStart="5sp"
                     android:layout_weight="1"
                     android:ems="4"
+                    android:hint="@string/stars"
                     android:inputType="number"
                     android:maxEms="4"
                     android:shadowColor="@color/colorBlueGrey"
                     android:shadowDx="2"
                     android:shadowDy="2"
                     android:shadowRadius="2"
-                    android:textStyle="bold"
                     android:textAlignment="center"
-                    android:hint="@string/stars"
                     android:textDirection="ltr"
-                    android:layout_marginStart="5sp"
-                    android:layout_marginEnd="5sp"
-                    android:theme="@style/CustomEditText"/>
+                    android:textStyle="bold"
+                    android:theme="@style/CustomEditText" />
 
                 <EditText
                     android:id="@+id/et_credit4"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="5sp"
+                    android:layout_marginStart="5sp"
                     android:layout_weight="1"
                     android:ems="4"
+                    android:hint="@string/stars"
                     android:inputType="number"
                     android:maxEms="4"
                     android:shadowColor="@color/colorBlueGrey"
                     android:shadowDx="2"
                     android:shadowDy="2"
                     android:shadowRadius="2"
-                    android:textStyle="bold"
                     android:textAlignment="center"
-                    android:hint="@string/stars"
                     android:textDirection="ltr"
-                    android:layout_marginStart="5sp"
-                    android:layout_marginEnd="5sp"
-                    android:theme="@style/CustomEditText"/>
+                    android:textStyle="bold"
+                    android:theme="@style/CustomEditText" />
             </LinearLayout>
 
         </net.cachapa.expandablelayout.ExpandableLayout>

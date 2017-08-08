@@ -3,13 +3,17 @@ package com.ionicframework.KiooskSharj;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
 
+import com.github.jorgecastilloprz.FABProgressCircle;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -19,10 +23,13 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-public class MobilePackageFragment extends Fragment implements RadioGroup.OnCheckedChangeListener {
+public class MobilePackageFragment extends Fragment implements RadioGroup.OnCheckedChangeListener, View.OnClickListener {
 
     private RadioGroup rgPackageTime, rgPackageCustomerType;
     private ExpandableHeightGridView gridview;
+    private View view;
+    private FragmentManager fm;
+    private Boolean loadingStatus = false;
 
     public MobilePackageFragment() {
         // Required empty public constructor
@@ -37,22 +44,33 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_mobile_package, container, false);
+        view = inflater.inflate(R.layout.fragment_mobile_package, container, false);
 
-        FragmentManager fm = getParentFragment().getFragmentManager();
+        fm = getParentFragment().getFragmentManager();
         fm.popBackStack();
 
         ArrayList<Package> packages = getPackagesList();
-        gridview = (ExpandableHeightGridView) view.findViewById(R.id.grid_view_packages);
-        gridview.setAdapter(new PackageCardAdapter(getContext(), fm, packages));
-        gridview.setExpanded(true);
-        gridview.setFocusable(false);
+        if (packages != null) {
+            setupGridView(packages);
+        } else view.findViewById(R.id.ll_error_getting_packages).setVisibility(View.VISIBLE);
 
         rgPackageTime = (RadioGroup) view.findViewById(R.id.rg_time_period);
         rgPackageTime.setOnCheckedChangeListener(this);
 
         rgPackageCustomerType = (RadioGroup) view.findViewById(R.id.rg_customer_type);
         rgPackageCustomerType.setOnCheckedChangeListener(this);
+
+        view.findViewById(R.id.refresh_packages_btn).setOnClickListener(this);
+
+        return view;
+    }
+
+    private void setupGridView(ArrayList<Package> packages) {
+        view.findViewById(R.id.ll_error_getting_packages).setVisibility(View.GONE);
+        gridview = (ExpandableHeightGridView) view.findViewById(R.id.grid_view_packages);
+        gridview.setAdapter(new PackageCardAdapter(getContext(), fm, packages));
+        gridview.setExpanded(true);
+        gridview.setFocusable(false);
 
         JSONObject filters = new JSONObject();
         try {
@@ -64,27 +82,44 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        return view;
     }
 
-    private ArrayList<Package> getPackagesList(){
+    private ArrayList<Package> getPackagesList() {
         SharedPreferences sharedpreferences = getActivity().getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
-        Type listOfPackages = new TypeToken<ArrayList<Package>>() {}.getType();
-        String strPackages = sharedpreferences.getString("packages", "");
-        ArrayList<Package> packages = new Gson().fromJson(strPackages, listOfPackages);
-        for (int i = 0; i < packages.size(); i++){
-            if (packages.get(i).getName().contains("شگفت انگیز"))
-                packages.remove(i);
+        if (sharedpreferences.contains("packages")) {
+            Type listOfPackages = new TypeToken<ArrayList<Package>>() {
+            }.getType();
+            String strPackages = sharedpreferences.getString("packages", "");
+            ArrayList<Package> packages = new Gson().fromJson(strPackages, listOfPackages);
+            if (packages == null)
+                return null;
+            for (int i = 0; i < packages.size(); i++) {
+                if (packages.get(i).getName().contains("شگفت انگیز"))
+                    packages.remove(i);
+            }
+            return packages;
         }
-        return packages;
+        return null;
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser){
+            if (view != null && view.findViewById(R.id.ll_error_getting_packages).getVisibility() == View.VISIBLE){
+                ArrayList<Package> packs = getPackagesList();
+                if (packs != null) {
+                    setupGridView(packs);
+                }
+            }
+        }
     }
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
         String customerType = "";
         String timeRange = "";
-        switch (rgPackageCustomerType.getCheckedRadioButtonId()){
+        switch (rgPackageCustomerType.getCheckedRadioButtonId()) {
             case R.id.rb_customer_prepaid:
                 customerType = "prepaid";
                 break;
@@ -94,7 +129,7 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
             case R.id.rb_customer_td_lte:
                 customerType = "TDLTE";
         }
-        switch (rgPackageTime.getCheckedRadioButtonId()){
+        switch (rgPackageTime.getCheckedRadioButtonId()) {
             case R.id.rb_hourly:
                 timeRange = "hourly";
                 break;
@@ -116,8 +151,68 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
             String filterStr = filters.toString();
             ((PackageCardAdapter) gridview.getAdapter()).getFilter().filter(filterStr);
 
-        } catch (JSONException e) {
+        } catch (JSONException | NullPointerException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.refresh_packages_btn:
+                if (!loadingStatus) {
+                    loadingStatus = true;
+                    FABProgressCircle fabProgressCircle = (FABProgressCircle) view.findViewById(R.id.fabProgressCircle);
+                    fabProgressCircle.show();
+                    ArrayList<Package> packs = getPackagesList();
+                    if (packs != null) {
+                        setupGridView(packs);
+                        fabProgressCircle.hide();
+                        loadingStatus = false;
+
+                    } else {
+                        GetInitializeData dataGetter = new GetInitializeData(
+                                (AppCompatActivity) getActivity(),
+                                new OnEventListener() {
+                                    @Override
+                                    public void onSuccess() {
+                                        fabProgressCircle.beginFinalAnimation();
+                                        loadingStatus = false;
+                                        fabProgressCircle.attachListener(() -> {
+                                            ArrayList<Package> packs = getPackagesList();
+                                            if (packs != null) {
+                                                setupGridView(packs);
+                                                fabProgressCircle.hide();
+                                                loadingStatus = false;
+                                            }
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onFailure() {
+                                        Handler handler = new Handler();
+                                        Runnable runnableCode = () -> {
+                                            handler.postDelayed(() -> {
+                                                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                                builder.setTitle("خطا در اتصال به سرور");
+                                                builder.setMessage("لطفا اتصال اینترنت خود را بررسی و مجددا امتحان کنید.");
+                                                builder.setPositiveButton("OK", (dialog, which) -> {
+                                                    fabProgressCircle.hide();
+                                                    loadingStatus = false;
+                                                });
+                                                AlertDialog dialog = builder.create();
+                                                dialog.show();
+                                            }, 2000);
+                                        };
+
+                                        handler.post(runnableCode);
+                                    }
+                                }
+                        );
+                        dataGetter.execute();
+                    }
+                }
+                break;
         }
     }
 }

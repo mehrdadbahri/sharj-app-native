@@ -42,9 +42,6 @@ public class MainActivity extends AppCompatActivity
     private FragmentManager fragmentManager;
     private Fragment fragment = null;
     private ActionBarDrawerToggle toggle;
-    private SharedPreferences sharedpreferences;
-    private String TAG = MainActivity.class.getSimpleName();
-    private static String url = "http://chr724.ir/services/v3/EasyCharge/initializeData";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,9 +84,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        sharedpreferences = getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
-
-        new GetInitializeData().execute();
+        new GetInitializeData(this, null).execute();
     }
 
     @Override
@@ -149,110 +144,5 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
 
         return true;
-    }
-
-    private class GetInitializeData extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            if (isNetworkConnected()) {
-                HttpHandler sh = new HttpHandler();
-
-                // Making a request to url and getting response
-                String jsonStr = sh.makeServiceCall(url);
-
-                if (jsonStr != null) {
-                    ArrayList<Package> packages;
-                    ArrayList<Package> giftcards;
-                    try {
-                        JSONObject jsonObj = new JSONObject(jsonStr);
-
-                        JSONObject packageObj = jsonObj.getJSONObject("products").getJSONObject("internetPackage").getJSONObject("mtn");
-                        packages = new ArrayList<Package>();
-
-                        for (Iterator<String> iter = packageObj.keys(); iter.hasNext(); ) {
-                            String key = iter.next();
-                            JSONArray tempArray = packageObj.getJSONArray(key);
-                            for (int i = 0; i < tempArray.length(); i++) {
-                                JSONObject j = tempArray.getJSONObject(i);
-                                Package p = new Package(j.getString("id"), j.getString("name"), j.getString("price"));
-                                packages.add(p);
-                            }
-                        }
-
-                        SharedPreferences.Editor editor = sharedpreferences.edit();
-
-                        Type listOfPackages = new TypeToken<ArrayList<Package>>() {
-                        }.getType();
-                        String strPackages = new Gson().toJson(packages, listOfPackages);
-
-                        editor.putString("packages", strPackages);
-
-                        JSONObject giftcardObj = jsonObj.getJSONObject("products").getJSONObject("giftCard");
-                        giftcards = new ArrayList<>();
-
-                        for (Iterator<String> iter = giftcardObj.keys(); iter.hasNext(); ) {
-                            String key = iter.next();
-                            JSONArray tempArray = giftcardObj.getJSONArray(key);
-                            for (int i = 0; i < tempArray.length(); i++) {
-                                JSONObject j = tempArray.getJSONObject(i);
-                                Package p = new Package(j.getString("id"), j.getString("name"), j.getString("price"));
-                                giftcards.add(p);
-                            }
-                        }
-
-                        Type listOfGiftcards = new TypeToken<ArrayList<Package>>() {
-                        }.getType();
-                        String strGiftcards = new Gson().toJson(giftcards, listOfGiftcards);
-
-                        editor.putString("giftcards", strGiftcards);
-
-                        editor.apply();
-
-                    } catch (final JSONException e) {
-                        Log.e("", "Json parsing error: " + e.getMessage());
-                    }
-
-
-                } else {
-                    Log.e(TAG, "Couldn't get json from server.");
-                    runOnUiThread(() -> Log.e(TAG, "Couldn't get json from server. Check LogCat for possible errors!"));
-
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-        }
-
-    }
-
-    private boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork != null && activeNetwork.isConnected()) {
-            try {
-                URL checkUrl = new URL(url);
-                HttpURLConnection urlc = (HttpURLConnection) checkUrl.openConnection();
-                urlc.setRequestProperty("User-Agent", "test");
-                urlc.setRequestProperty("Connection", "close");
-                urlc.setConnectTimeout(1000); // mTimeout is in seconds
-                urlc.connect();
-                return urlc.getResponseCode() == 200;
-            } catch (IOException e) {
-                Log.i("warning", "Error checking internet connection", e);
-                return false;
-            }
-        }
-
-        return false;
     }
 }

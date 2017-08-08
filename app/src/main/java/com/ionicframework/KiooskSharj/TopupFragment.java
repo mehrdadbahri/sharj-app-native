@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -56,6 +57,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     private Spinner spinner;
     private EditText credit1, credit2, credit3, credit4;
     private String USSD;
+    private FloatingActionButton fab;
 
     public TopupFragment() {
         // Required empty public constructor
@@ -149,6 +151,9 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
 
         setupCreditcardInputs();
 
+        fab = (FloatingActionButton) view.findViewById(R.id.fab_payment_method_hint);
+        fab.setOnClickListener(this);
+
         AndroidNetworking.initialize(getContext());
 
         return view;
@@ -226,6 +231,16 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
                 startActivityForResult(intent, 0);
                 break;
+
+            case R.id.fab_payment_method_hint:
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("خرید آفلاین");
+                builder.setMessage(R.string.offline_payment_hint);
+                builder.setPositiveButton("OK", (dialog, which) -> {
+
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
         }
     }
 
