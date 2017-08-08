@@ -40,7 +40,7 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
         View view = inflater.inflate(R.layout.fragment_mobile_package, container, false);
 
         FragmentManager fm = getParentFragment().getFragmentManager();
-        fm.popBackStack("package_root", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        fm.popBackStack();
 
         ArrayList<Package> packages = getPackagesList();
         gridview = (ExpandableHeightGridView) view.findViewById(R.id.grid_view_packages);

@@ -12,13 +12,12 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.transition.Slide;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,11 +41,9 @@ public class MainActivity extends AppCompatActivity
 
     private FragmentManager fragmentManager;
     private Fragment fragment = null;
-
+    private ActionBarDrawerToggle toggle;
     private SharedPreferences sharedpreferences;
-
     private String TAG = MainActivity.class.getSimpleName();
-
     private static String url = "http://chr724.ir/services/v3/EasyCharge/initializeData";
 
     @Override
@@ -59,19 +56,23 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("خرید شارژ");
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setHomeButtonEnabled(true);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
+        actionBar.setDisplayHomeAsUpEnabled(false);
+        toggle.setDrawerIndicatorEnabled(true);
         toggle.syncState();
 
         fragmentManager = getSupportFragmentManager();
 
         toolbar.setNavigationOnClickListener(v -> {
-            if (fragmentManager.getBackStackEntryCount() > 0)
-                fragmentManager.popBackStack();
+            if (fragmentManager.getBackStackEntryCount() > 0) {
+                onBackPressed();
+            }
             else if (drawer.isDrawerOpen(GravityCompat.START))
                 drawer.closeDrawer(GravityCompat.START);
             else
@@ -110,7 +111,12 @@ public class MainActivity extends AppCompatActivity
                 AlertDialog dialog = builder.create();
                 dialog.show();
             }
-            else super.onBackPressed();
+            else {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+                toggle.setDrawerIndicatorEnabled(true);
+                toggle.syncState();
+                super.onBackPressed();
+            }
         }
     }
 

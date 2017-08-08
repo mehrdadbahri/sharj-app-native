@@ -93,15 +93,16 @@ class PackageCardAdapter extends BaseAdapter implements Filterable {
             Fragment fragment = new PackagePurchaseFragment();
 
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                // Defines enter transition only for shared element
-                Transition changeBoundsTransition = TransitionInflater.from(mContext).inflateTransition(android.R.transition.move);
-//                changeBoundsTransition.setDuration(1000);
-                fragment.setSharedElementEnterTransition(changeBoundsTransition);
+                Transition moveTransition = TransitionInflater.from(mContext).inflateTransition(android.R.transition.move);
+                fragment.setSharedElementEnterTransition(moveTransition);
+                fragment.setSharedElementReturnTransition(moveTransition);
                 bundle.putString("transitionName", "card" + p.getId());
                 fragment.setArguments(bundle);
+                Fragment currentFragment = fragmentManager.findFragmentById(R.id.main_container_wrapper);
                 fragmentManager.beginTransaction()
-                        .replace(R.id.main_container_wrapper, fragment)
-                        .addToBackStack("package_root")
+                        .hide(currentFragment)
+                        .add(R.id.main_container_wrapper, fragment)
+                        .addToBackStack(null)
                         .addSharedElement(cv, "card" + p.getId())
                         .commit();
 
@@ -109,7 +110,7 @@ class PackageCardAdapter extends BaseAdapter implements Filterable {
                 fragment.setArguments(bundle);
                 fragmentManager.beginTransaction()
                         .replace(R.id.main_container_wrapper, fragment)
-                        .addToBackStack("package_root")
+                        .addToBackStack(null)
                         .commit();
             }
         });

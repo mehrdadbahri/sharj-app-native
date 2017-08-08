@@ -33,7 +33,7 @@ public class AwesomePackageFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_awesome_package, container, false);
 
         FragmentManager fm = getParentFragment().getFragmentManager();
-        fm.popBackStack("package_root", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        fm.popBackStack();
 
         ArrayList<Package> packages = getAwesomePackagesList();
         ExpandableHeightGridView gridview = (ExpandableHeightGridView) view.findViewById(R.id.grid_view_awesome_packages);

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
@@ -15,6 +16,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
+import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,7 +56,6 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setTitle("خرید بسته اینترنتی");
         actionBar.setDisplayHomeAsUpEnabled(true);
-//        postponeEnterTransition();
     }
 
     @Override
@@ -130,7 +131,6 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
             String transitionName = getArguments().getString("transitionName");
             view.findViewById(R.id.cv_selected_package_card).setTransitionName(transitionName);
         }
-//        startPostponedEnterTransition();
     }
 
     private String getCustomerType(String name) {

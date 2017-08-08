@@ -36,11 +36,10 @@ public class GiftcardFragment extends Fragment {
         View view =  inflater.inflate(R.layout.fragment_giftcatd, container, false);
 
         FragmentManager fm = getFragmentManager();
-        fm.popBackStack("giftcard_root", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        fm.popBackStack();
 
         ActionBar actionBar = ((AppCompatActivity)getActivity()).getSupportActionBar();
         actionBar.setTitle("خرید گیفت کارت");
-        actionBar.setDisplayHomeAsUpEnabled(false);
 
         ArrayList<Package> giftcards = getGiftcardsList();
         ExpandableHeightGridView gridview = (ExpandableHeightGridView) view.findViewById(R.id.grid_view_giftcard);

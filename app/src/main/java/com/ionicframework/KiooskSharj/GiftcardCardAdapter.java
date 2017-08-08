@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.CardView;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,13 +66,37 @@ public class GiftcardCardAdapter extends BaseAdapter {
         ((ImageView) view.findViewById(R.id.iv_giftcard_logo)).setImageResource(getImageId(p.getId()));
 
         CardView cv = (CardView) view.findViewById(R.id.cv_giftcards);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            String transitionName = "card" + p.getId();
+            cv.setTransitionName(transitionName);
+        }
         cv.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             String strPackage = new Gson().toJson(p, Package.class);
             bundle.putString("selectedGiftcard", strPackage);
             Fragment fragment = new GiftcardPurchaseFragment();
-            fragment.setArguments(bundle);
-            fragmentManager.beginTransaction().replace(R.id.main_container_wrapper, fragment).addToBackStack("giftcard_root").commit();
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                Transition moveTransition = TransitionInflater.from(mContext).inflateTransition(android.R.transition.move);
+                fragment.setSharedElementEnterTransition(moveTransition);
+                fragment.setSharedElementReturnTransition(moveTransition);
+                bundle.putString("transitionName", "card" + p.getId());
+                fragment.setArguments(bundle);
+                Fragment currentFragment = fragmentManager.findFragmentById(R.id.main_container_wrapper);
+                fragmentManager.beginTransaction()
+                        .hide(currentFragment)
+                        .add(R.id.main_container_wrapper, fragment)
+                        .addToBackStack(null)
+                        .addSharedElement(cv, "card" + p.getId())
+                        .commit();
+
+            } else {
+                fragment.setArguments(bundle);
+                fragmentManager.beginTransaction()
+                        .replace(R.id.main_container_wrapper, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
         });
 
         return view;

@@ -57,8 +57,8 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         assert actionBar != null;
         actionBar.setTitle("خرید گیفت کارت");
-        actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -118,6 +118,15 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
         AndroidNetworking.initialize(getContext());
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            String transitionName = getArguments().getString("transitionName");
+            view.findViewById(R.id.cv_selected_giftcard_card).setTransitionName(transitionName);
+        }
     }
 
     private int getImageId(String name) {

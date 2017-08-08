@@ -37,7 +37,6 @@ public class PackageFragment extends Fragment {
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle("بسته های اینترنتی ایرانسل");
-            actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
         fragmentManager = getChildFragmentManager();
@@ -57,15 +56,5 @@ public class PackageFragment extends Fragment {
         adapter.addFragment(new MobilePackageFragment(), "بسته های همراه");
         viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(1, false);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayHomeAsUpEnabled(false);
-        }
-        super.onAttach(context);
     }
 }
