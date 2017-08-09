@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -43,6 +44,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
+
 public class TopupFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
 
     private RadioButton saman, mellat, zarinpal;
@@ -58,6 +61,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     private EditText credit1, credit2, credit3, credit4;
     private String USSD;
     private FloatingActionButton fab;
+    private SmoothProgressBar progressBar;
 
     public TopupFragment() {
         // Required empty public constructor
@@ -72,7 +76,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        view =  inflater.inflate(R.layout.fragment_topup, container, false);
+        view = inflater.inflate(R.layout.fragment_topup, container, false);
 
         sharedpreferences = getContext().getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
 
@@ -154,6 +158,8 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
         fab = (FloatingActionButton) view.findViewById(R.id.fab_payment_method_hint);
         fab.setOnClickListener(this);
 
+        progressBar = (SmoothProgressBar) view.findViewById(R.id.pb_topup);
+
         AndroidNetworking.initialize(getContext());
 
         return view;
@@ -161,37 +167,38 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.buy_topup_btn:
+                progressBar.progressiveStart();
+                v.setEnabled(false);
                 String phoneNumber = editTextPhone.getText().toString();
                 if (isphoneNumber(phoneNumber)) {
                     SharedPreferences.Editor editor = sharedpreferences.edit();
                     editor.putString("phoneNumber", phoneNumber);
                     editor.apply();
-                }
-                else {
+                } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setTitle("خطا");
                     builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
                     builder.setPositiveButton("OK", (dialog, which) -> {
-
+                        progressBar.progressiveStop();
+                        buyBtn.setEnabled(true);
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
                     return;
                 }
-                if (online_payment.isChecked()){
+                if (online_payment.isChecked()) {
                     String scriptVersion = "Android";
                     String chargeCode = getOperator(phoneNumber);
-                    if (awesomeSwitch.isChecked()){
+                    if (awesomeSwitch.isChecked()) {
                         chargeCode += "!";
                     }
                     String chargeAmount = getAmount(spinner);
                     onlineTopup(chargeCode, phoneNumber, chargeAmount, selectedGateway, scriptVersion);
-                }
-                else {
+                } else {
                     String creditNumber = getCreditCard();
-                    if (isCreditNumber(creditNumber)){
+                    if (isCreditNumber(creditNumber)) {
                         SharedPreferences.Editor editor = sharedpreferences.edit();
                         editor.putString("creditCard", creditNumber);
                         editor.apply();
@@ -205,19 +212,19 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                             return;
                         }
                         String callPermission = Manifest.permission.CALL_PHONE;
-                        if (ContextCompat.checkSelfPermission(getContext(), callPermission) == PackageManager.PERMISSION_GRANTED){
+                        if (ContextCompat.checkSelfPermission(getContext(), callPermission) == PackageManager.PERMISSION_GRANTED) {
                             startActivity(new Intent("android.intent.action.CALL", Uri.parse(USSD)));
                             return;
                         }
                         requestPermissions(new String[]{callPermission}, 1);
 
-                    }
-                    else {
+                    } else {
                         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                         builder.setTitle("خطا");
                         builder.setMessage("شماره کارت بانکی صحیح نمی باشد.");
                         builder.setPositiveButton("OK", (dialog, which) -> {
-
+                            progressBar.progressiveStop();
+                            buyBtn.setEnabled(true);
                         });
                         AlertDialog dialog = builder.create();
                         dialog.show();
@@ -227,6 +234,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                 break;
 
             case R.id.btn_search_topup:
+                progressBar.progressiveStart();
                 Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
                 startActivityForResult(intent, 0);
@@ -242,6 +250,20 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                 AlertDialog dialog = builder.create();
                 dialog.show();
         }
+    }
+
+    @Override
+    public void onResume() {
+        Handler handler = new Handler();
+        Runnable runnableCode = () -> {
+            handler.postDelayed(() -> {
+                if (progressBar != null)
+                    progressBar.progressiveStop();
+            }, 100);
+        };
+        handler.post(runnableCode);
+        buyBtn.setEnabled(true);
+        super.onResume();
     }
 
     private void onlineTopup(
@@ -271,13 +293,12 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                         @Override
                         public void onResponse(JSONObject response) {
                             try {
-                                if (response.getString("status").equals("Success")){
+                                if (response.getString("status").equals("Success")) {
                                     String paymentUrl = response.getJSONObject("paymentInfo").getString("url");
                                     Intent i = new Intent(Intent.ACTION_VIEW);
                                     i.setData(Uri.parse(paymentUrl));
                                     startActivity(i);
-                                }
-                                else {
+                                } else {
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                                     builder.setTitle("خطا");
                                     builder.setMessage(response.getString("errorMessage"));
@@ -291,6 +312,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                                 e.printStackTrace();
                             }
                         }
+
                         @Override
                         public void onError(ANError error) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -310,7 +332,7 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private String getAmount(Spinner spinner) {
-        switch (spinner.getSelectedItem().toString()){
+        switch (spinner.getSelectedItem().toString()) {
             case "هزار تومان":
                 return "1000";
             case "۲ هزار تومان":
@@ -326,16 +348,13 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private String getOperator(String number) {
-        if(number.startsWith("093") || number.startsWith("090")) {
+        if (number.startsWith("093") || number.startsWith("090")) {
             return "MTN";
-        }
-        else if(number.startsWith("094")) {
+        } else if (number.startsWith("094")) {
             return "WiMax";
-        }
-        else if(number.startsWith("091") || number.startsWith("0990")) {
+        } else if (number.startsWith("091") || number.startsWith("0990")) {
             return "MCI";
-        }
-        else if(number.startsWith("0921") || number.startsWith("0922")) {
+        } else if (number.startsWith("0921") || number.startsWith("0922")) {
             return "RTL";
         }
         return null;
@@ -350,9 +369,9 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     }
 
     private String getCreditCard() {
-        return credit1.getText().toString()+
-                credit2.getText().toString()+
-                credit3.getText().toString()+
+        return credit1.getText().toString() +
+                credit2.getText().toString() +
+                credit3.getText().toString() +
                 credit4.getText().toString();
     }
 
@@ -512,8 +531,8 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
         String ussd = "tel:*789*1415*1*";
         ussd += phone + "*";
         ussd += isAwesome ? "2*" : "1*";
-        if (isAwesome){
-            switch (amount){
+        if (isAwesome) {
+            switch (amount) {
                 case "1000":
                     amount = "1";
                     break;

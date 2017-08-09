@@ -3,18 +3,17 @@ package com.ionicframework.KiooskSharj;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +35,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
+
 
 public class CardChargeFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
 
@@ -47,6 +48,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     private SharedPreferences sharedpreferences;
     private EditText editTextPhone;
     private String selectedGateway;
+    private SmoothProgressBar progressBar;
+    private AppCompatButton buyBtn;
 
     public CardChargeFragment() {
         // Required empty public constructor
@@ -125,12 +128,14 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
         ImageView searchContact = (ImageView) view.findViewById(R.id.btn_search_cardcharge);
         searchContact.setOnClickListener(this);
 
-        AppCompatButton buyBtn = (AppCompatButton) view.findViewById(R.id.buy_cardcharge_btn);
+        buyBtn = (AppCompatButton) view.findViewById(R.id.buy_cardcharge_btn);
         buyBtn.setOnClickListener(this);
 
         editTextPhone = (EditText) view.findViewById(R.id.phone_number_cardcharge);
         if (sharedpreferences.contains("phoneNumber"))
             editTextPhone.setText(sharedpreferences.getString("phoneNumber", ""));
+
+        progressBar = (SmoothProgressBar) view.findViewById(R.id.pb_topup);
 
         return view;
     }
@@ -213,6 +218,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 break;
 
             case R.id.buy_cardcharge_btn:
+                progressBar.progressiveStart();
+                v.setEnabled(false);
                 String phoneNumber = editTextPhone.getText().toString();
                 if (isphoneNumber(phoneNumber)) {
                     SharedPreferences.Editor editor = sharedpreferences.edit();
@@ -223,7 +230,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                     builder.setTitle("خطا");
                     builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
                     builder.setPositiveButton("OK", (dialog, which) -> {
-
+                        progressBar.progressiveStop();
+                        buyBtn.setEnabled(true);
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -237,7 +245,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                     builder.setTitle("خطا");
                     builder.setMessage("خرید کارت شارژ ۱۰۰۰ تومانی برای اپراتور رایتل امکان پذیر نمی باشد.");
                     builder.setPositiveButton("OK", (dialog, which) -> {
-
+                        progressBar.progressiveStop();
+                        buyBtn.setEnabled(true);
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -251,11 +260,26 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 break;
 
             case R.id.btn_search_cardcharge:
+                progressBar.progressiveStart();
                 Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
                 startActivityForResult(intent, 0);
                 break;
         }
+    }
+
+    @Override
+    public void onResume() {
+        Handler handler = new Handler();
+        Runnable runnableCode = () -> {
+            handler.postDelayed(() -> {
+                if (progressBar != null)
+                    progressBar.progressiveStop();
+            }, 100);
+        };
+        handler.post(runnableCode);
+        buyBtn.setEnabled(true);
+        super.onResume();
     }
 
     private void buyCardCharge(

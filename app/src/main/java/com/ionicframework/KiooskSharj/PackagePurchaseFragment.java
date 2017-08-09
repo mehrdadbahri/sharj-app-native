@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -37,6 +38,8 @@ import org.json.JSONObject;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
+
 public class PackagePurchaseFragment extends Fragment implements View.OnClickListener {
 
     private RadioButton saman, mellat, zarinpal;
@@ -45,6 +48,7 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
     private EditText editTextPhone;
     private SharedPreferences sharedpreferences;
     private String selectedPackageId;
+    private SmoothProgressBar progressBar;
 
     public PackagePurchaseFragment() {
         // Required empty public constructor
@@ -118,6 +122,8 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
         editTextPhone = (EditText) view.findViewById(R.id.phone_number_selected_package);
         if (sharedpreferences.contains("phoneNumber"))
             editTextPhone.setText(sharedpreferences.getString("phoneNumber", ""));
+
+        progressBar = (SmoothProgressBar) view.findViewById(R.id.pb_topup);
 
         AndroidNetworking.initialize(getContext());
 
@@ -216,6 +222,8 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.buy_selected_package_btn:
+                progressBar.progressiveStart();
+                v.setEnabled(false);
                 String phoneNumber = editTextPhone.getText().toString();
                 if (isphoneNumber(phoneNumber)) {
                     SharedPreferences.Editor editor = sharedpreferences.edit();
@@ -226,7 +234,8 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
                     builder.setTitle("خطا");
                     builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
                     builder.setPositiveButton("OK", (dialog, which) -> {
-
+                        progressBar.progressiveStop();
+                        buyBtn.setEnabled(true);
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -234,7 +243,6 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
                 }
 
                 String scriptVersion = "Android";
-
                 buyPackage(selectedPackageId, phoneNumber, selectedGateway, scriptVersion);
                 break;
 
@@ -244,6 +252,20 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
                 startActivityForResult(intent, 0);
                 break;
         }
+    }
+
+    @Override
+    public void onResume() {
+        Handler handler = new Handler();
+        Runnable runnableCode = () -> {
+            handler.postDelayed(() -> {
+                if (progressBar != null)
+                    progressBar.progressiveStop();
+            }, 100);
+        };
+        handler.post(runnableCode);
+        buyBtn.setEnabled(true);
+        super.onResume();
     }
 
     private void buyPackage(String selectedPackageId, String phoneNumber, String selectedGateway, String scriptVersion) {

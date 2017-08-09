@@ -44,5 +44,6 @@ dependencies {
     compile 'net.cachapa.expandablelayout:expandablelayout:2.9.1'
     compile 'com.amitshekhar.android:android-networking:1.0.0'
     compile 'com.github.jorgecastilloprz:fabprogresscircle:1.01@aar'
+    compile 'com.hannesdorfmann.smoothprogressbar:library:1.0.0'
     testCompile 'junit:junit:4.12'
 }

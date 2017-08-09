@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -38,6 +39,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
+
 
 public class GiftcardPurchaseFragment extends Fragment implements View.OnClickListener {
 
@@ -46,6 +49,8 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
     private EditText editTextPhone;
     private SharedPreferences sharedpreferences;
     private String selectedGiftcardId;
+    private AppCompatButton buyBtn;
+    private SmoothProgressBar progressBar;
 
     public GiftcardPurchaseFragment() {
         // Required empty public constructor
@@ -105,7 +110,7 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
             selectedGateway = "ZarinPal";
         });
 
-        AppCompatButton buyBtn = (AppCompatButton) view.findViewById(R.id.buy_selected_giftcard_btn);
+        buyBtn = (AppCompatButton) view.findViewById(R.id.buy_selected_giftcard_btn);
         buyBtn.setOnClickListener(this);
 
         ImageView searchContact = (ImageView) view.findViewById(R.id.btn_search__selected_giftcard);
@@ -114,6 +119,8 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
         editTextPhone = (EditText) view.findViewById(R.id.phone_number_selected_giftcard);
         if (sharedpreferences.contains("phoneNumber"))
             editTextPhone.setText(sharedpreferences.getString("phoneNumber", ""));
+
+        progressBar = (SmoothProgressBar) view.findViewById(R.id.pb_topup);
 
         AndroidNetworking.initialize(getContext());
 
@@ -153,6 +160,8 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.buy_selected_giftcard_btn:
+                progressBar.progressiveStart();
+                v.setEnabled(false);
                 String phoneNumber = editTextPhone.getText().toString();
                 if (isphoneNumber(phoneNumber)) {
                     SharedPreferences.Editor editor = sharedpreferences.edit();
@@ -163,7 +172,8 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
                     builder.setTitle("خطا");
                     builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
                     builder.setPositiveButton("OK", (dialog, which) -> {
-
+                        progressBar.progressiveStop();
+                        buyBtn.setEnabled(true);
                     });
                     AlertDialog dialog = builder.create();
                     dialog.show();
@@ -171,16 +181,30 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
                 }
 
                 String scriptVersion = "Android";
-
                 buyGiftcard(selectedGiftcardId, phoneNumber, selectedGateway, scriptVersion);
                 break;
 
             case R.id.btn_search_topup:
+                progressBar.progressiveStart();
                 Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
                 startActivityForResult(intent, 0);
                 break;
         }
+    }
+
+    @Override
+    public void onResume() {
+        Handler handler = new Handler();
+        Runnable runnableCode = () -> {
+            handler.postDelayed(() -> {
+                if (progressBar != null)
+                    progressBar.progressiveStop();
+            }, 100);
+        };
+        handler.post(runnableCode);
+        buyBtn.setEnabled(true);
+        super.onResume();
     }
 
     private void buyGiftcard(String selectedGiftcardId, String phoneNumber, String selectedGateway, String scriptVersion) {
