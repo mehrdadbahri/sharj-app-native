@@ -50,9 +50,8 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
         fm.popBackStack();
 
         ArrayList<Package> packages = getPackagesList();
-        if (packages != null) {
-            setupGridView(packages);
-        } else view.findViewById(R.id.ll_error_getting_packages).setVisibility(View.VISIBLE);
+        if (packages != null) setupGridView(packages);
+        else view.findViewById(R.id.ll_error_getting_packages).setVisibility(View.VISIBLE);
 
         rgPackageTime = (RadioGroup) view.findViewById(R.id.rg_time_period);
         rgPackageTime.setOnCheckedChangeListener(this);
