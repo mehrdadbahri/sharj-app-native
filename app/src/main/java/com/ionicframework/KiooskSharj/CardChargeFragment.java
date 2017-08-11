@@ -6,12 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -29,12 +30,15 @@ import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 
 
@@ -50,6 +54,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     private String selectedGateway;
     private SmoothProgressBar progressBar;
     private AppCompatButton buyBtn;
+    private View view;
+    private Boolean progressBarStatus = true;
 
     public CardChargeFragment() {
         // Required empty public constructor
@@ -64,7 +70,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_card_charge, container, false);
+        view = inflater.inflate(R.layout.fragment_card_charge, container, false);
 
         sharedpreferences = getContext().getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
 
@@ -103,7 +109,8 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
         chargeAmounts.add("۱۰ هزار تومان");
         chargeAmounts.add("۲۰ هزار تومان");
 
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this.getContext(), android.R.layout.simple_spinner_item, chargeAmounts);
+        ArrayAdapter<String> dataAdapter;
+        dataAdapter = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_item, chargeAmounts);
 
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
@@ -129,13 +136,18 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
         searchContact.setOnClickListener(this);
 
         buyBtn = (AppCompatButton) view.findViewById(R.id.buy_cardcharge_btn);
+        Drawable cartIcon = MaterialDrawableBuilder.with(getContext())
+                .setIcon(MaterialDrawableBuilder.IconValue.CART)
+                .setColor(Color.WHITE)
+                .build();
+        buyBtn.setCompoundDrawablesRelativeWithIntrinsicBounds(cartIcon, null, null, null);
         buyBtn.setOnClickListener(this);
 
         editTextPhone = (EditText) view.findViewById(R.id.phone_number_cardcharge);
         if (sharedpreferences.contains("phoneNumber"))
             editTextPhone.setText(sharedpreferences.getString("phoneNumber", ""));
 
-        progressBar = (SmoothProgressBar) view.findViewById(R.id.pb_topup);
+        progressBar = (SmoothProgressBar) view.findViewById(R.id.pb_card_charge);
 
         return view;
     }
@@ -218,7 +230,6 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 break;
 
             case R.id.buy_cardcharge_btn:
-                progressBar.progressiveStart();
                 v.setEnabled(false);
                 String phoneNumber = editTextPhone.getText().toString();
                 if (isphoneNumber(phoneNumber)) {
@@ -226,14 +237,22 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                     editor.putString("phoneNumber", phoneNumber);
                     editor.apply();
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setTitle("خطا");
-                    builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
-                    builder.setPositiveButton("OK", (dialog, which) -> {
+                    SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                    dialog.setTitleText("خطا");
+                    dialog.setContentText("شماره تلفن وارد شده صحیح نمی باشد.");
+                    dialog.setConfirmText("OK");
+                    dialog.setOnShowListener(dialog1 -> {
+                        SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                        ((TextView) alertDialog.findViewById(R.id.content_text))
+                                .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                        ((TextView) alertDialog.findViewById(R.id.title_text))
+                                .setTextColor(getResources().getColor(R.color.colorDanger));
+                    });
+                    dialog.setOnDismissListener(dialog1 ->  {
                         progressBar.progressiveStop();
+                        progressBarStatus = false;
                         buyBtn.setEnabled(true);
                     });
-                    AlertDialog dialog = builder.create();
                     dialog.show();
                     break;
                 }
@@ -241,17 +260,28 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 if (selectedOperator.getText().toString().equals(getResources().getString(R.string.rightel))
                         && spinner.getSelectedItem().toString().equals("هزار تومان")
                         ) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setTitle("خطا");
-                    builder.setMessage("خرید کارت شارژ ۱۰۰۰ تومانی برای اپراتور رایتل امکان پذیر نمی باشد.");
-                    builder.setPositiveButton("OK", (dialog, which) -> {
+                    SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                    dialog.setTitleText("خطا");
+                    dialog.setContentText("خرید کارت شارژ ۱۰۰۰ تومانی برای اپراتور رایتل امکان پذیر نمی باشد.");
+                    dialog.setConfirmText("OK");
+                    dialog.setOnShowListener(dialog1 -> {
+                        SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                        ((TextView) alertDialog.findViewById(R.id.content_text))
+                                .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                        ((TextView) alertDialog.findViewById(R.id.title_text))
+                                .setTextColor(getResources().getColor(R.color.colorDanger));
+                    });
+                    dialog.setOnDismissListener(dialog1 ->  {
                         progressBar.progressiveStop();
+                        progressBarStatus = false;
                         buyBtn.setEnabled(true);
                     });
-                    AlertDialog dialog = builder.create();
                     dialog.show();
                     break;
                 }
+                progressBar.setIndeterminate(true);
+                progressBar.progressiveStart();
+                progressBarStatus = true;
                 String chargeCode = "CC-";
                 chargeCode = chargeCode.concat(getOperatorCode(selectedOperator.getText().toString()));
                 chargeCode = chargeCode.concat("-");
@@ -260,7 +290,6 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                 break;
 
             case R.id.btn_search_cardcharge:
-                progressBar.progressiveStart();
                 Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
                 startActivityForResult(intent, 0);
@@ -271,15 +300,26 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
     @Override
     public void onResume() {
         Handler handler = new Handler();
-        Runnable runnableCode = () -> {
-            handler.postDelayed(() -> {
-                if (progressBar != null)
-                    progressBar.progressiveStop();
-            }, 100);
-        };
+        Runnable runnableCode = () -> handler.postDelayed(() -> {
+            if (progressBar != null) {
+                progressBar.progressiveStop();
+                progressBarStatus = false;
+            }
+        }, 100);
         handler.post(runnableCode);
         buyBtn.setEnabled(true);
         super.onResume();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser){
+            if (view != null && progressBarStatus){
+                progressBar.progressiveStop();
+                progressBarStatus = false;
+            }
+        }
     }
 
     private void buyCardCharge(
@@ -313,31 +353,37 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
                                     i.setData(Uri.parse(paymentUrl));
                                     startActivity(i);
                                 } else {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                                    builder.setTitle("خطا");
-                                    builder.setMessage(response.getString("errorMessage"));
-                                    builder.setPositiveButton("OK", (dialog, which) -> {
-
+                                    SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                                    dialog.setTitleText("خطا");
+                                    dialog.setContentText(response.getString("errorMessage"));
+                                    dialog.setConfirmText("OK");
+                                    dialog.setOnShowListener(dialog1 -> {
+                                        SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                                        ((TextView) alertDialog.findViewById(R.id.content_text))
+                                                .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                                        ((TextView) alertDialog.findViewById(R.id.title_text))
+                                                .setTextColor(getResources().getColor(R.color.colorDanger));
                                     });
-                                    AlertDialog dialog = builder.create();
                                     dialog.show();
                                 }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            } catch (ActivityNotFoundException e) {
+                            } catch (JSONException | ActivityNotFoundException e) {
                                 e.printStackTrace();
                             }
                         }
 
                         @Override
                         public void onError(ANError error) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                            builder.setTitle("خطا");
-                            builder.setMessage("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
-                            builder.setPositiveButton("OK", (dialog, which) -> {
-
+                            SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                            dialog.setTitleText("خطا");
+                            dialog.setContentText("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
+                            dialog.setConfirmText("OK");
+                            dialog.setOnShowListener(dialog1 -> {
+                                SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                                ((TextView) alertDialog.findViewById(R.id.content_text))
+                                        .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                                ((TextView) alertDialog.findViewById(R.id.title_text))
+                                        .setTextColor(getResources().getColor(R.color.colorDanger));
                             });
-                            AlertDialog dialog = builder.create();
                             dialog.show();
                         }
                     });
@@ -374,7 +420,7 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
             case "۲۰ هزار تومان":
                 return "20000";
         }
-        return null;
+        return "";
     }
 
     @Override
@@ -389,22 +435,20 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
 
                 Cursor cursor = this.getActivity().getContentResolver()
                         .query(contactUri, projection, null, null, null);
+                assert cursor != null;
                 cursor.moveToFirst();
 
                 int column = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
                 String number = cursor.getString(column);
                 editTextPhone.setText(number.replace("+98", "0"));
+                cursor.close();
             }
         }
 
     }
 
     private boolean isphoneNumber(String phoneNumber) {
-        if (getOperator(phoneNumber) == null)
-            return false;
-        if (phoneNumber.length() != 11)
-            return false;
-        return true;
+        return getOperator(phoneNumber) != null && phoneNumber.length() == 11;
     }
 
     private String getOperator(String number) {
@@ -422,7 +466,6 @@ public class CardChargeFragment extends Fragment implements AdapterView.OnItemSe
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        String item = parent.getItemAtPosition(position).toString();
     }
 
     @Override

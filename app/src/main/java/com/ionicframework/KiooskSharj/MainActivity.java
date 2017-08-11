@@ -1,10 +1,8 @@
 package com.ionicframework.KiooskSharj;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -14,27 +12,16 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -42,6 +29,8 @@ public class MainActivity extends AppCompatActivity
     private FragmentManager fragmentManager;
     private Fragment fragment = null;
     private ActionBarDrawerToggle toggle;
+    private Menu navigationMenu;
+    private int prevMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +41,10 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("خرید شارژ");
+
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
         actionBar.setHomeButtonEnabled(true);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -63,6 +54,28 @@ public class MainActivity extends AppCompatActivity
         actionBar.setDisplayHomeAsUpEnabled(false);
         toggle.setDrawerIndicatorEnabled(true);
         toggle.syncState();
+
+        MaterialDrawableBuilder iconBuilder = MaterialDrawableBuilder.with(this)
+                .setColor(Color.DKGRAY);
+        navigationMenu = ((NavigationView) findViewById(R.id.nav_view)).getMenu();
+
+        iconBuilder.setIcon(MaterialDrawableBuilder.IconValue.CREDIT_CARD_PLUS);
+        navigationMenu.findItem(R.id.item_charge).setIcon(iconBuilder.build());
+
+        iconBuilder.setIcon(MaterialDrawableBuilder.IconValue.PACKAGE_DOWN);
+        navigationMenu.findItem(R.id.item_packages).setIcon(iconBuilder.build());
+
+        iconBuilder.setIcon(MaterialDrawableBuilder.IconValue.WALLET_GIFTCARD);
+        navigationMenu.findItem(R.id.item_giftcard).setIcon(iconBuilder.build());
+
+//        iconBuilder.setIcon(MaterialDrawableBuilder.IconValue.COUNTER);
+//        navigationMenu.findItem(R.id.item_pay_bill).setIcon(iconBuilder.build());
+
+        iconBuilder.setIcon(MaterialDrawableBuilder.IconValue.STAR_CIRCLE);
+        navigationMenu.findItem(R.id.item_comment).setIcon(iconBuilder.build());
+
+        iconBuilder.setIcon(MaterialDrawableBuilder.IconValue.PHONE_CLASSIC);
+        navigationMenu.findItem(R.id.item_support).setIcon(iconBuilder.build());
 
         fragmentManager = getSupportFragmentManager();
 
@@ -78,6 +91,7 @@ public class MainActivity extends AppCompatActivity
 
         final FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragment = new ChargeFragment();
+        prevMenuItem = R.id.item_charge;
         fragmentTransaction.replace(R.id.main_container_wrapper, fragment);
         fragmentTransaction.commit();
 
@@ -94,16 +108,18 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
             if (fragmentManager.getBackStackEntryCount() == 0) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("خروج");
-                builder.setMessage("آیا می خواهید از برنامه خارج شوید؟");
-                builder.setPositiveButton("بلی", (dialog, which) -> {
-                    finish();
+                SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.NORMAL_TYPE);
+                dialog.setTitleText("خروج");
+                dialog.setContentText("آیا می خواهید از برنامه خارج شوید؟");
+                dialog.setConfirmText("بله");
+                dialog.setCancelText("خیر");
+                dialog.setConfirmClickListener(sweetAlertDialog -> finish());
+                dialog.setCancelClickListener(SweetAlertDialog::dismissWithAnimation);
+                dialog.setOnShowListener(dialog1 -> {
+                    SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                    TextView text = (TextView) alertDialog.findViewById(R.id.content_text);
+                    text.setTextColor(getResources().getColor(R.color.colorPrimaryText));
                 });
-                builder.setNegativeButton("خیر", (dialog, which) -> {
-
-                });
-                AlertDialog dialog = builder.create();
                 dialog.show();
             }
             else {
@@ -117,32 +133,61 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        boolean switchFragment = false;
+        switch (item.getItemId()){
+            case R.id.item_charge:
+                fragment = new ChargeFragment();
+                prevMenuItem = R.id.item_charge;
+                switchFragment = true;
+                break;
+            case R.id.item_packages:
+                fragment = new PackageFragment();
+                prevMenuItem = R.id.item_packages;
+                switchFragment = true;
+                break;
+            case R.id.item_giftcard:
+                fragment = new GiftcardFragment();
+                prevMenuItem = R.id.item_giftcard;
+                switchFragment = true;
+                break;
+//            case R.id.item_pay_bill:
+//                prevMenuItem = R.id.item_pay_bill;
+//                break;
+            case R.id.item_support:
+                SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.NORMAL_TYPE);
+                dialog.setTitleText("پشتیبانی");
+                dialog.setContentText("در صورت نیاز, برای پیگیری تراکنش های انجام شده (فقط تراکنش های آنلاین) می توانید با واحد پشتیبانی به شماره 88019574 - 021 تماس بگیرید.");
+                dialog.setOnDismissListener(dialog1 -> navigationMenu.findItem(prevMenuItem).setChecked(true));
+                dialog.setOnShowListener(dialog1 -> {
+                    SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                    TextView text = (TextView) alertDialog.findViewById(R.id.content_text);
+                    text.setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                });
+                dialog.show();
+                break;
+            case  R.id.item_comment:
+                navigationMenu.findItem(prevMenuItem).setChecked(true);
+                Intent intent = new Intent(Intent.ACTION_EDIT);
+                intent.setData(Uri.parse("bazaar://details?id=" + "com.ionicframework.KiooskSharj"));
+                intent.setPackage("com.farsitel.bazaar");
+                startActivity(intent);
+                break;
 
-        if (id == R.id.charge) {
-            fragment = new ChargeFragment();
-        } else if (id == R.id.packages) {
-            fragment = new PackageFragment();
-        } else if (id == R.id.giftcard) {
-            fragment = new GiftcardFragment();
         }
 
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(R.id.main_container_wrapper, fragment);
-        transaction.commit();
+        if (switchFragment) {
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.main_container_wrapper, fragment);
+            transaction.commit();
+        }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-
+        ((DrawerLayout) findViewById(R.id.drawer_layout)).closeDrawer(GravityCompat.START);
         return true;
     }
 }

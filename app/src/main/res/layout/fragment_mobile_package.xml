@@ -21,19 +21,19 @@
             android:background="@color/colorWhite"
             android:orientation="horizontal">
 
-            <ImageView
+            <net.steamcrafted.materialiconlib.MaterialIconView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10sp"
                 android:layout_marginTop="2dp"
-                android:src="@drawable/ic_filter_variant" />
+                app:materialIcon="filter_variant" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingStart="5dp"
                 android:paddingTop="5sp"
-                android:text="تنظیمات نمایش بسته ها"
+                android:text="@string/packages_filter"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -152,8 +152,8 @@
             android:id="@+id/ll_error_getting_packages"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -191,9 +191,8 @@
                         android:id="@+id/refresh_packages_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:borderWidth="0dp"
                         android:layout_margin="5sp"
-                        android:src="@drawable/ic_refresh_white_24dp" />
+                        app:borderWidth="0dp" />
                 </com.github.jorgecastilloprz.FABProgressCircle>
 
             </LinearLayout>

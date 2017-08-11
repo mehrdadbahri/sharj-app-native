@@ -1,6 +1,7 @@
 package com.ionicframework.KiooskSharj;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,6 +16,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
 import java.util.ArrayList;
 
@@ -63,7 +66,7 @@ public class GiftcardCardAdapter extends BaseAdapter {
 
         ((TextView) view.findViewById(R.id.tv_giftcard_detail)).setText(p.getName());
 
-        ((ImageView) view.findViewById(R.id.iv_giftcard_logo)).setImageResource(getImageId(p.getId()));
+        ((ImageView) view.findViewById(R.id.iv_giftcard_logo)).setImageDrawable(getGiftcardDrawable(p.getId()));
 
         CardView cv = (CardView) view.findViewById(R.id.cv_giftcards);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
@@ -102,23 +105,43 @@ public class GiftcardCardAdapter extends BaseAdapter {
         return view;
     }
 
-    private int getImageId(String name) {
-        if (name.toLowerCase().contains("itunes"))
-            return R.drawable.itunes;
-        if (name.toLowerCase().contains("googleplay"))
-            return R.drawable.google_play;
-        if (name.toLowerCase().contains("microsoft"))
-            return R.drawable.microsoft;
-        if (name.toLowerCase().contains("amazon"))
-            return R.drawable.amazon;
-        if (name.toLowerCase().contains("xbox"))
-            return R.drawable.xbox;
-        if (name.toLowerCase().contains("playstationplus"))
-            return R.drawable.playstaoin_plus;
-        if (name.toLowerCase().contains("playstation"))
-            return R.drawable.playstation;
-        if (name.toLowerCase().contains("steam"))
-            return R.drawable.steam;
-        return R.drawable.xbox;
+    private Drawable getGiftcardDrawable(String name) {
+        MaterialDrawableBuilder drawableBuilder = MaterialDrawableBuilder.with(mContext);
+        if (name.toLowerCase().contains("itunes")) {
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.ITUNES);
+            drawableBuilder.setColor(mContext.getResources().getColor(R.color.itunesColor));
+
+        }
+        else if (name.toLowerCase().contains("googleplay")) {
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.GOOGLE_PLAY);
+            drawableBuilder.setColor(mContext.getResources().getColor(R.color.googlePlayColor));
+        }
+        else if (name.toLowerCase().contains("microsoft")) {
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.MICROSOFT);
+            drawableBuilder.setColor(mContext.getResources().getColor(R.color.microsoftColor));
+        }
+        else if (name.toLowerCase().contains("amazon")) {
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.AMAZON);
+            drawableBuilder.setColor(mContext.getResources().getColor(R.color.amazonColor));
+
+        }
+        else if (name.toLowerCase().contains("xbox")) {
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.XBOX);
+            drawableBuilder.setColor(mContext.getResources().getColor(R.color.xboxColor));
+        }
+        else if (name.toLowerCase().contains("playstationplus")) {
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.PLAYSTATION);
+            drawableBuilder.setColor(mContext.getResources().getColor(R.color.playstationPlusColor));
+        }
+        else if (name.toLowerCase().contains("playstation")) {
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.PLAYSTATION);
+            drawableBuilder.setColor(mContext.getResources().getColor(R.color.playstationColor));
+        }
+        else if (name.toLowerCase().contains("steam")) {
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.STEAM);
+            drawableBuilder.setColor(mContext.getResources().getColor(R.color.steamColor));
+        }
+
+        return drawableBuilder.build();
     }
 }

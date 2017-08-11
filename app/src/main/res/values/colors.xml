@@ -7,7 +7,7 @@
     <color name="colorAccent">#FF5722</color>
     <color name="colorBackgroundLight">#FAFAFA</color>
     <color name="colorButtonPrimary">#00BCD4</color>
-    <color name="colorPrimaryText">#000</color>
+    <color name="colorPrimaryText">#191716</color>
     <color name="colorSecondaryText">#fff</color>
     <color name="colorBlueGrey">#607D8B</color>
     <color name="colorWhite">#fff</color>
@@ -16,6 +16,18 @@
     <color name="gplus_color_2">#f4b400</color>
     <color name="gplus_color_3">#427fed</color>
     <color name="gplus_color_4">#b23424</color>
+    <color name="colorGold">#ffd700</color>
+    <color name="itunesColor">#d655a3</color>
+    <color name="googlePlayColor">#24BBC2</color>
+    <color name="amazonColor">#f7da5b</color>
+    <color name="xboxColor">#109648</color>
+    <color name="microsoftColor">#00a1f1</color>
+    <color name="playstationColor">#17bebb</color>
+    <color name="playstationPlusColor">#ffc914</color>
+    <color name="steamColor">#191716</color>
+    <color name="blue_btn_bg_color">#00BCD4</color>
+    <color name="blue_btn_bg_pressed_color">#00796B</color>
+    <color name="gray_btn_bg_color">#FF5252</color>
 
     <integer-array name="gplus_colors">
         <item>@color/gplus_color_1</item>

@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -6,11 +7,10 @@
     tools:context="com.ionicframework.KiooskSharj.TopupFragment">
 
     <fr.castorflex.android.smoothprogressbar.SmoothProgressBar
-        android:id="@+id/pb_topup"
+        android:id="@+id/pb_card_charge"
         style="@style/GNowProgressBar"
         android:layout_width="match_parent"
-        android:layout_height="10dp"
-        android:indeterminate="true" />
+        android:layout_height="10dp" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -117,14 +117,16 @@
                     android:textDirection="ltr"
                     android:theme="@style/CustomEditText" />
 
-                <ImageView
+                <net.steamcrafted.materialiconlib.MaterialIconView
                     android:id="@+id/btn_search_cardcharge"
-                    android:layout_width="50sp"
-                    android:layout_height="50sp"
+                    android:layout_width="40sp"
+                    android:layout_height="40sp"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginStart="-10sp"
+                    android:layout_marginStart="-5sp"
                     android:layout_marginTop="5sp"
-                    android:background="@drawable/search_btn" />
+                    android:contentDescription="@string/select_number_from_cantacts"
+                    app:materialIcon="account_search"
+                    app:materialIconColor="@color/colorButtonPrimary" />
 
             </LinearLayout>
 
@@ -160,6 +162,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/payment_gateway"
                 android:textAlignment="center"
+                android:textColor="@color/colorPrimaryText"
+                android:textStyle="bold"
                 android:textSize="16sp" />
 
             <LinearLayout
@@ -251,7 +255,6 @@
                     android:layout_centerHorizontal="true"
                     android:layout_marginBottom="20sp"
                     android:background="@drawable/rounded_button"
-                    android:drawableRight="@drawable/ic_shop"
                     android:padding="10sp"
                     android:text="@string/buy"
                     android:textColor="@color/colorSecondaryText"

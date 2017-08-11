@@ -10,8 +10,7 @@
         android:id="@+id/pb_topup"
         style="@style/GNowProgressBar"
         android:layout_width="match_parent"
-        android:layout_height="10dp"
-        android:indeterminate="true" />
+        android:layout_height="10dp" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -129,14 +128,15 @@
                     android:textDirection="ltr"
                     android:theme="@style/CustomEditText" />
 
-                <ImageView
+                <net.steamcrafted.materialiconlib.MaterialIconView
                     android:id="@+id/btn_search__selected_giftcard"
-                    android:layout_width="50sp"
-                    android:layout_height="50sp"
+                    android:layout_width="40sp"
+                    android:layout_height="40sp"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginStart="-10sp"
+                    android:layout_marginStart="-5sp"
                     android:layout_marginTop="5sp"
-                    android:background="@drawable/search_btn"
+                    app:materialIcon="account_search"
+                    app:materialIconColor="@color/colorButtonPrimary"
                     android:contentDescription="@string/select_number_from_cantacts" />
 
             </LinearLayout>
@@ -148,6 +148,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/payment_gateway"
                 android:textAlignment="center"
+                android:textColor="@color/colorPrimaryText"
+                android:textStyle="bold"
                 android:textSize="16sp" />
 
             <LinearLayout
@@ -239,7 +241,6 @@
                     android:layout_centerHorizontal="true"
                     android:layout_marginBottom="20sp"
                     android:background="@drawable/rounded_button"
-                    android:drawableStart="@drawable/ic_shop"
                     android:padding="10sp"
                     android:text="@string/buy"
                     android:textColor="@color/colorSecondaryText"

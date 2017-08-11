@@ -6,8 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
@@ -17,8 +18,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
-import android.transition.TransitionInflater;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,12 +31,15 @@ import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.google.gson.Gson;
 
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 
 public class PackagePurchaseFragment extends Fragment implements View.OnClickListener {
@@ -49,6 +51,8 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
     private SharedPreferences sharedpreferences;
     private String selectedPackageId;
     private SmoothProgressBar progressBar;
+    private Boolean progressBarStatus = false;
+    private View view;
 
     public PackagePurchaseFragment() {
         // Required empty public constructor
@@ -65,7 +69,7 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_package_purchase, container, false);
+        view = inflater.inflate(R.layout.fragment_package_purchase, container, false);
 
         sharedpreferences = getContext().getSharedPreferences("KiooskData", Context.MODE_PRIVATE);
 
@@ -114,6 +118,11 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
         });
 
         buyBtn = (AppCompatButton) view.findViewById(R.id.buy_selected_package_btn);
+        Drawable cartIcon = MaterialDrawableBuilder.with(getContext())
+                .setIcon(MaterialDrawableBuilder.IconValue.CART)
+                .setColor(Color.WHITE)
+                .build();
+        buyBtn.setCompoundDrawablesRelativeWithIntrinsicBounds(cartIcon, null, null, null);
         buyBtn.setOnClickListener(this);
 
         ImageView searchContact = (ImageView) view.findViewById(R.id.btn_search__selected_package);
@@ -222,7 +231,6 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.buy_selected_package_btn:
-                progressBar.progressiveStart();
                 v.setEnabled(false);
                 String phoneNumber = editTextPhone.getText().toString();
                 if (isphoneNumber(phoneNumber)) {
@@ -230,17 +238,28 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
                     editor.putString("phoneNumber", phoneNumber);
                     editor.apply();
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setTitle("خطا");
-                    builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
-                    builder.setPositiveButton("OK", (dialog, which) -> {
+                    SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                    dialog.setTitleText("خطا");
+                    dialog.setContentText("شماره تلفن وارد شده صحیح نمی باشد.");
+                    dialog.setConfirmText("OK");
+                    dialog.setOnShowListener(dialog1 -> {
+                        SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                        ((TextView) alertDialog.findViewById(R.id.content_text))
+                                .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                        ((TextView) alertDialog.findViewById(R.id.title_text))
+                                .setTextColor(getResources().getColor(R.color.colorDanger));
+                    });
+                    dialog.setOnDismissListener(dialog1 ->  {
                         progressBar.progressiveStop();
+                        progressBarStatus = false;
                         buyBtn.setEnabled(true);
                     });
-                    AlertDialog dialog = builder.create();
                     dialog.show();
                     return;
                 }
+                progressBar.setIndeterminate(true);
+                progressBar.progressiveStart();
+                progressBarStatus = true;
 
                 String scriptVersion = "Android";
                 buyPackage(selectedPackageId, phoneNumber, selectedGateway, scriptVersion);
@@ -259,13 +278,26 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
         Handler handler = new Handler();
         Runnable runnableCode = () -> {
             handler.postDelayed(() -> {
-                if (progressBar != null)
+                if (progressBar != null) {
                     progressBar.progressiveStop();
+                    progressBarStatus = false;
+                }
             }, 100);
         };
         handler.post(runnableCode);
         buyBtn.setEnabled(true);
         super.onResume();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser){
+            if (view != null && progressBarStatus){
+                progressBar.progressiveStop();
+                progressBarStatus = false;
+            }
+        }
     }
 
     private void buyPackage(String selectedPackageId, String phoneNumber, String selectedGateway, String scriptVersion) {
@@ -294,13 +326,17 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
                                     i.setData(Uri.parse(paymentUrl));
                                     startActivity(i);
                                 } else {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                                    builder.setTitle("خطا");
-                                    builder.setMessage(response.getString("errorMessage"));
-                                    builder.setPositiveButton("OK", (dialog, which) -> {
-
+                                    SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                                    dialog.setTitleText("خطا");
+                                    dialog.setContentText(response.getString("errorMessage"));
+                                    dialog.setConfirmText("OK");
+                                    dialog.setOnShowListener(dialog1 -> {
+                                        SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                                        ((TextView) alertDialog.findViewById(R.id.content_text))
+                                                .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                                        ((TextView) alertDialog.findViewById(R.id.title_text))
+                                                .setTextColor(getResources().getColor(R.color.colorDanger));
                                     });
-                                    AlertDialog dialog = builder.create();
                                     dialog.show();
                                 }
                             } catch (JSONException e) {
@@ -312,13 +348,17 @@ public class PackagePurchaseFragment extends Fragment implements View.OnClickLis
 
                         @Override
                         public void onError(ANError error) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                            builder.setTitle("خطا");
-                            builder.setMessage("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
-                            builder.setPositiveButton("OK", (dialog, which) -> {
-
+                            SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                            dialog.setTitleText("خطا");
+                            dialog.setContentText("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
+                            dialog.setConfirmText("OK");
+                            dialog.setOnShowListener(dialog1 -> {
+                                SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                                ((TextView) alertDialog.findViewById(R.id.content_text))
+                                        .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                                ((TextView) alertDialog.findViewById(R.id.title_text))
+                                        .setTextColor(getResources().getColor(R.color.colorDanger));
                             });
-                            AlertDialog dialog = builder.create();
                             dialog.show();
                         }
                     });

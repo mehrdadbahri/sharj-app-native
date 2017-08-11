@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,7 +18,6 @@ import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -31,12 +32,14 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.androidnetworking.AndroidNetworking;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.JSONObjectRequestListener;
 
 import net.cachapa.expandablelayout.ExpandableLayout;
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +47,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 
 public class TopupFragment extends Fragment implements AdapterView.OnItemSelectedListener, View.OnClickListener {
@@ -60,8 +64,8 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     private Spinner spinner;
     private EditText credit1, credit2, credit3, credit4;
     private String USSD;
-    private FloatingActionButton fab;
     private SmoothProgressBar progressBar;
+    private Boolean progressBarStatus = false;
 
     public TopupFragment() {
         // Required empty public constructor
@@ -142,6 +146,11 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
         spinner.setAdapter(dataAdapter);
 
         buyBtn = (AppCompatButton) view.findViewById(R.id.buy_topup_btn);
+        Drawable cartIcon = MaterialDrawableBuilder.with(getContext())
+                .setIcon(MaterialDrawableBuilder.IconValue.CART)
+                .setColor(Color.WHITE)
+                .build();
+        buyBtn.setCompoundDrawablesRelativeWithIntrinsicBounds(cartIcon, null, null, null);
         buyBtn.setOnClickListener(this);
 
         ImageView searchContact = (ImageView) view.findViewById(R.id.btn_search_topup);
@@ -155,7 +164,12 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
 
         setupCreditcardInputs();
 
-        fab = (FloatingActionButton) view.findViewById(R.id.fab_payment_method_hint);
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_payment_method_hint);
+        Drawable exclamationIcon = MaterialDrawableBuilder.with(getContext())
+                .setIcon(MaterialDrawableBuilder.IconValue.EXCLAMATION)
+                .setColor(Color.WHITE)
+                .build();
+        fab.setImageDrawable(exclamationIcon);
         fab.setOnClickListener(this);
 
         progressBar = (SmoothProgressBar) view.findViewById(R.id.pb_topup);
@@ -169,7 +183,6 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.buy_topup_btn:
-                progressBar.progressiveStart();
                 v.setEnabled(false);
                 String phoneNumber = editTextPhone.getText().toString();
                 if (isphoneNumber(phoneNumber)) {
@@ -177,18 +190,29 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                     editor.putString("phoneNumber", phoneNumber);
                     editor.apply();
                 } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                    builder.setTitle("خطا");
-                    builder.setMessage("شماره تلفن وارد شده صحیح نمی باشد.");
-                    builder.setPositiveButton("OK", (dialog, which) -> {
+                    SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                    dialog.setTitleText("خطا");
+                    dialog.setContentText("شماره تلفن وارد شده صحیح نمی باشد.");
+                    dialog.setConfirmText("OK");
+                    dialog.setOnShowListener(dialog1 -> {
+                        SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                        ((TextView) alertDialog.findViewById(R.id.content_text))
+                                .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                        ((TextView) alertDialog.findViewById(R.id.title_text))
+                                .setTextColor(getResources().getColor(R.color.colorDanger));
+                    });
+                    dialog.setOnDismissListener(dialog1 ->  {
                         progressBar.progressiveStop();
+                        progressBarStatus = false;
                         buyBtn.setEnabled(true);
                     });
-                    AlertDialog dialog = builder.create();
                     dialog.show();
                     return;
                 }
                 if (online_payment.isChecked()) {
+                    progressBar.setIndeterminate(true);
+                    progressBar.progressiveStart();
+                    progressBarStatus = true;
                     String scriptVersion = "Android";
                     String chargeCode = getOperator(phoneNumber);
                     if (awesomeSwitch.isChecked()) {
@@ -199,6 +223,9 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                 } else {
                     String creditNumber = getCreditCard();
                     if (isCreditNumber(creditNumber)) {
+                        progressBar.setIndeterminate(true);
+                        progressBar.progressiveStart();
+                        progressBarStatus = true;
                         SharedPreferences.Editor editor = sharedpreferences.edit();
                         editor.putString("creditCard", creditNumber);
                         editor.apply();
@@ -219,14 +246,22 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                         requestPermissions(new String[]{callPermission}, 1);
 
                     } else {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                        builder.setTitle("خطا");
-                        builder.setMessage("شماره کارت بانکی صحیح نمی باشد.");
-                        builder.setPositiveButton("OK", (dialog, which) -> {
+                        SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                        dialog.setTitleText("خطا");
+                        dialog.setContentText("شماره کارت بانکی صحیح نمی باشد.");
+                        dialog.setConfirmText("OK");
+                        dialog.setOnShowListener(dialog1 -> {
+                            SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                            ((TextView) alertDialog.findViewById(R.id.content_text))
+                                    .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                            ((TextView) alertDialog.findViewById(R.id.title_text))
+                                    .setTextColor(getResources().getColor(R.color.colorDanger));
+                        });
+                        dialog.setOnDismissListener(dialog1 ->  {
                             progressBar.progressiveStop();
+                            progressBarStatus = false;
                             buyBtn.setEnabled(true);
                         });
-                        AlertDialog dialog = builder.create();
                         dialog.show();
                         return;
                     }
@@ -234,36 +269,52 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                 break;
 
             case R.id.btn_search_topup:
-                progressBar.progressiveStart();
                 Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
                 intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
                 startActivityForResult(intent, 0);
                 break;
 
             case R.id.fab_payment_method_hint:
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle("خرید آفلاین");
-                builder.setMessage(R.string.offline_payment_hint);
-                builder.setPositiveButton("OK", (dialog, which) -> {
-
+                SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.NORMAL_TYPE);
+                dialog.setTitleText("خرید آفلاین");
+                dialog.setContentText(getResources().getString(R.string.offline_payment_hint));
+                dialog.setConfirmText("OK");
+                dialog.setOnShowListener(dialog1 -> {
+                    SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                    ((TextView) alertDialog.findViewById(R.id.content_text))
+                            .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                    ((TextView) alertDialog.findViewById(R.id.title_text))
+                            .setTextColor(getResources().getColor(R.color.colorDanger));
                 });
-                AlertDialog dialog = builder.create();
                 dialog.show();
         }
     }
 
     @Override
     public void onResume() {
-        Handler handler = new Handler();
-        Runnable runnableCode = () -> {
-            handler.postDelayed(() -> {
-                if (progressBar != null)
-                    progressBar.progressiveStop();
-            }, 100);
-        };
-        handler.post(runnableCode);
-        buyBtn.setEnabled(true);
         super.onResume();
+        if (progressBarStatus) {
+            Handler handler = new Handler();
+            Runnable runnableCode = () -> handler.postDelayed(() -> {
+                if (progressBar != null) {
+                    progressBar.progressiveStop();
+                    progressBarStatus = false;
+                }
+            }, 100);
+            handler.post(runnableCode);
+            buyBtn.setEnabled(true);
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser){
+            if (view != null && progressBarStatus){
+                progressBar.progressiveStop();
+                progressBarStatus = false;
+            }
+        }
     }
 
     private void onlineTopup(
@@ -299,13 +350,17 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
                                     i.setData(Uri.parse(paymentUrl));
                                     startActivity(i);
                                 } else {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                                    builder.setTitle("خطا");
-                                    builder.setMessage(response.getString("errorMessage"));
-                                    builder.setPositiveButton("OK", (dialog, which) -> {
-
+                                    SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                                    dialog.setTitleText("خطا");
+                                    dialog.setContentText(response.getString("errorMessage"));
+                                    dialog.setConfirmText("OK");
+                                    dialog.setOnShowListener(dialog1 -> {
+                                        SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                                        ((TextView) alertDialog.findViewById(R.id.content_text))
+                                                .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                                        ((TextView) alertDialog.findViewById(R.id.title_text))
+                                                .setTextColor(getResources().getColor(R.color.colorDanger));
                                     });
-                                    AlertDialog dialog = builder.create();
                                     dialog.show();
                                 }
                             } catch (JSONException | ActivityNotFoundException e) {
@@ -315,13 +370,17 @@ public class TopupFragment extends Fragment implements AdapterView.OnItemSelecte
 
                         @Override
                         public void onError(ANError error) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                            builder.setTitle("خطا");
-                            builder.setMessage("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
-                            builder.setPositiveButton("OK", (dialog, which) -> {
-
+                            SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                            dialog.setTitleText("خطا");
+                            dialog.setContentText("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
+                            dialog.setConfirmText("OK");
+                            dialog.setOnShowListener(dialog1 -> {
+                                SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                                ((TextView) alertDialog.findViewById(R.id.content_text))
+                                        .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                                ((TextView) alertDialog.findViewById(R.id.title_text))
+                                        .setTextColor(getResources().getColor(R.color.colorDanger));
                             });
-                            AlertDialog dialog = builder.create();
                             dialog.show();
                         }
                     });

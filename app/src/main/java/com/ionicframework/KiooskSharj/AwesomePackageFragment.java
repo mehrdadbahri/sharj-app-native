@@ -2,22 +2,29 @@ package com.ionicframework.KiooskSharj;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.github.jorgecastilloprz.FABProgressCircle;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class AwesomePackageFragment extends Fragment implements View.OnClickListener {
 
@@ -48,7 +55,13 @@ public class AwesomePackageFragment extends Fragment implements View.OnClickList
             setupGridView(packages);
         } else view.findViewById(R.id.ll_error_getting_packages).setVisibility(View.VISIBLE);
 
-        view.findViewById(R.id.refresh_packages_btn).setOnClickListener(this);
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.refresh_packages_btn);
+        Drawable refreshIcon = MaterialDrawableBuilder.with(getContext())
+                .setIcon(MaterialDrawableBuilder.IconValue.REFRESH)
+                .setColor(Color.WHITE)
+                .build();
+        fab.setImageDrawable(refreshIcon);
+        fab.setOnClickListener(this);
 
         return view;
     }
@@ -84,8 +97,8 @@ public class AwesomePackageFragment extends Fragment implements View.OnClickList
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser){
-            if (view != null && view.findViewById(R.id.ll_error_getting_packages).getVisibility() == View.VISIBLE){
+        if (isVisibleToUser) {
+            if (view != null && view.findViewById(R.id.ll_error_getting_packages).getVisibility() == View.VISIBLE) {
                 ArrayList<Package> packs = getAwesomePackagesList();
                 if (packs != null) {
                     setupGridView(packs);
@@ -131,14 +144,21 @@ public class AwesomePackageFragment extends Fragment implements View.OnClickList
                                         Handler handler = new Handler();
                                         Runnable runnableCode = () -> {
                                             handler.postDelayed(() -> {
-                                                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                                                builder.setTitle("خطا در اتصال به سرور");
-                                                builder.setMessage("لطفا اتصال اینترنت خود را بررسی و مجددا امتحان کنید.");
-                                                builder.setPositiveButton("OK", (dialog, which) -> {
+                                                SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                                                dialog.setTitleText("خطا");
+                                                dialog.setContentText("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
+                                                dialog.setConfirmText("OK");
+                                                dialog.setOnShowListener(dialog1 -> {
+                                                    SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                                                    ((TextView) alertDialog.findViewById(R.id.content_text))
+                                                            .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                                                    ((TextView) alertDialog.findViewById(R.id.title_text))
+                                                            .setTextColor(getResources().getColor(R.color.colorDanger));
+                                                });
+                                                dialog.setOnDismissListener(dialog1 -> {
                                                     fabProgressCircle.hide();
                                                     loadingStatus = false;
                                                 });
-                                                AlertDialog dialog = builder.create();
                                                 dialog.show();
                                             }, 2000);
                                         };

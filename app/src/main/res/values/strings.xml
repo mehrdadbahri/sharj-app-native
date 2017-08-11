@@ -27,4 +27,11 @@
     <string name="offline_payment_hint">خرید آفلاین فقط بر روی سیمکارت‌های ایرانسل و رایتل امکان پذیر می باشد. اگر سیمکارت گوشی شما ایرانسل و یا رایتل باشد می توانید از این گزینه استفاده کنید.</string>
     <string name="error_getting_package_data_from_server">خطا در دریافت اطلاعات بسته ها از سرور</string>
     <string name="try_again">تلاش مجدد</string>
+    <string name="packages_filter">تنظیمات نمایش بسته ها</string>
+    <string name="buy_sharj">خرید شارژ</string>
+    <string name="irancel_internet_package">بسته های اینترنتی ایرانسل</string>
+    <string name="buy_giftcard">خرید گیفت کارت</string>
+    <string name="send_comment">ارسال نظرات</string>
+    <string name="support">پشتیبانی</string>
+    <string name="pay_bill">پرداخت قبوض</string>
 </resources>

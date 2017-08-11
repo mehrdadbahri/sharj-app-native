@@ -2,26 +2,33 @@ package com.ionicframework.KiooskSharj;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.github.jorgecastilloprz.FABProgressCircle;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import net.steamcrafted.materialiconlib.MaterialDrawableBuilder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+
+import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class MobilePackageFragment extends Fragment implements RadioGroup.OnCheckedChangeListener, View.OnClickListener {
 
@@ -59,7 +66,13 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
         rgPackageCustomerType = (RadioGroup) view.findViewById(R.id.rg_customer_type);
         rgPackageCustomerType.setOnCheckedChangeListener(this);
 
-        view.findViewById(R.id.refresh_packages_btn).setOnClickListener(this);
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.refresh_packages_btn);
+        Drawable refreshIcon = MaterialDrawableBuilder.with(getContext())
+                .setIcon(MaterialDrawableBuilder.IconValue.REFRESH)
+                .setColor(Color.WHITE)
+                .build();
+        fab.setImageDrawable(refreshIcon);
+        fab.setOnClickListener(this);
 
         return view;
     }
@@ -104,8 +117,8 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser){
-            if (view != null && view.findViewById(R.id.ll_error_getting_packages).getVisibility() == View.VISIBLE){
+        if (isVisibleToUser) {
+            if (view != null && view.findViewById(R.id.ll_error_getting_packages).getVisibility() == View.VISIBLE) {
                 ArrayList<Package> packs = getPackagesList();
                 if (packs != null) {
                     setupGridView(packs);
@@ -192,14 +205,17 @@ public class MobilePackageFragment extends Fragment implements RadioGroup.OnChec
                                         Handler handler = new Handler();
                                         Runnable runnableCode = () -> {
                                             handler.postDelayed(() -> {
-                                                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                                                builder.setTitle("خطا در اتصال به سرور");
-                                                builder.setMessage("لطفا اتصال اینترنت خود را بررسی و مجددا امتحان کنید.");
-                                                builder.setPositiveButton("OK", (dialog, which) -> {
-                                                    fabProgressCircle.hide();
-                                                    loadingStatus = false;
+                                                SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE);
+                                                dialog.setTitleText("خطا");
+                                                dialog.setContentText("خطا در اتصال به سرور! لطفا از اتصال به اینترنت اطمینال حاصل نمایید سپس مجددا امتحان کنید.");
+                                                dialog.setConfirmText("OK");
+                                                dialog.setOnShowListener(dialog1 -> {
+                                                    SweetAlertDialog alertDialog = (SweetAlertDialog) dialog1;
+                                                    ((TextView) alertDialog.findViewById(R.id.content_text))
+                                                            .setTextColor(getResources().getColor(R.color.colorPrimaryText));
+                                                    ((TextView) alertDialog.findViewById(R.id.title_text))
+                                                            .setTextColor(getResources().getColor(R.color.colorDanger));
                                                 });
-                                                AlertDialog dialog = builder.create();
                                                 dialog.show();
                                             }, 2000);
                                         };

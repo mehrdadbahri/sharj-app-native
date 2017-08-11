@@ -67,8 +67,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         app:borderWidth="0dp"
-                        android:layout_margin="5sp"
-                        android:src="@drawable/ic_refresh_white_24dp" />
+                        android:layout_margin="5sp"/>
                 </com.github.jorgecastilloprz.FABProgressCircle>
 
             </LinearLayout>
