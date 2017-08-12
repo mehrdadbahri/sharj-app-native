@@ -7,7 +7,8 @@
     app:cardCornerRadius="10sp"
     app:cardElevation="5sp"
     app:contentPaddingTop="3sp"
-    android:id="@+id/cv_giftcards">
+    android:id="@+id/cv_giftcards"
+    app:cardPreventCornerOverlap="false">
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -31,7 +31,8 @@
                 app:cardBackgroundColor="@color/colorAccent"
                 app:cardCornerRadius="10sp"
                 app:cardElevation="5sp"
-                app:contentPaddingTop="3sp">
+                app:contentPaddingTop="3sp"
+                app:cardPreventCornerOverlap="false">
 
                 <LinearLayout
                     android:layout_width="match_parent"
