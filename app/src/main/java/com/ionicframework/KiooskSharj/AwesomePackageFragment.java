@@ -81,9 +81,7 @@ public class AwesomePackageFragment extends Fragment implements View.OnClickList
             String strPackages = sharedpreferences.getString("packages", "");
             ArrayList<Package> tempArray = new Gson().fromJson(strPackages, listOfPackages);
             ArrayList<Package> packages = new ArrayList<>();
-            if (tempArray == null) {
-                return null;
-            }
+            if (tempArray == null) return null;
             for (Package p : tempArray) {
                 if (p.getName().contains("شگفت انگیز")) {
                     packages.add(p);

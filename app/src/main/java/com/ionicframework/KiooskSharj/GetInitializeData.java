@@ -89,7 +89,8 @@ class GetInitializeData extends AsyncTask<Void, Void, Void> {
                         for (int i = 0; i < tempArray.length(); i++) {
                             JSONObject j = tempArray.getJSONObject(i);
                             Package p = new Package(j.getString("id"), j.getString("name"), j.getString("price"));
-                            giftcards.add(p);
+                            if (!p.getId().toLowerCase().contains("googleplay"))
+                                giftcards.add(p);
                         }
                     }
 

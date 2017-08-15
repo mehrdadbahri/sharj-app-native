@@ -113,7 +113,7 @@ public class GiftcardCardAdapter extends BaseAdapter {
 
         }
         else if (name.toLowerCase().contains("googleplay")) {
-            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.GOOGLE_PLAY);
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.GOOGLE);
             drawableBuilder.setColor(mContext.getResources().getColor(R.color.googlePlayColor));
         }
         else if (name.toLowerCase().contains("microsoft")) {

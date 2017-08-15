@@ -146,7 +146,7 @@ public class GiftcardPurchaseFragment extends Fragment implements View.OnClickLi
             drawableBuilder.setColor(getContext().getResources().getColor(R.color.itunesColor));
 
         } else if (name.toLowerCase().contains("googleplay")) {
-            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.GOOGLE_PLAY);
+            drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.GOOGLE);
             drawableBuilder.setColor(getContext().getResources().getColor(R.color.googlePlayColor));
         } else if (name.toLowerCase().contains("microsoft")) {
             drawableBuilder.setIcon(MaterialDrawableBuilder.IconValue.MICROSOFT);
